@@ -1,5 +1,4 @@
 # coding=utf-8
-import string
 from typing import Union
 from ._contract_data import Data
 from ._contract_model import Model
@@ -7,9 +6,9 @@ from ._contract_solution import Solution
 
 class NurseModel() :
 
-    pathData: string
-    pathModel: string
-    pathSolution: string
+    pathData: str
+    pathModel: str
+    pathSolution: str
 
     data: Data
     s_data: bool
