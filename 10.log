@@ -1,0 +1,36 @@
+>>>>> OBJ | CHRONOS | 2023-03-24 16:56:22.119861 | INICIALIZATION
+===== Chronos Manager =====
+Root time:  2023-03-24 16:56:22.119861
+Time limit: 5
+Valid:      True (2023-03-24 16:56:22.120871)
+Size:       0
+List:       
+===============
+<<<<<<<<<<<<<<<
+>>>>> OBJ | SOLVER | 2023-03-24 16:56:22.121851 | CHRONOS_MARK_START
+===== Chronos Counter =====:
+Name:               START OPTIMIZE
+Log:                True
+Start:              2023-03-24 16:56:22.121851
+Stop Condition:     Not set
+Valid:              Not set - 2023-03-24 16:56:22.121851
+===============
+<<<<<<<<<<<<<<<
+>>>>> OBJ | SOLVER | 2023-03-24 16:56:27.135816 | CHRONOS_MARK_STOP
+===== Chronos Counter =====:
+Name:               START OPTIMIZE
+Log:                True
+Start:              2023-03-24 16:56:22.121851
+Stop Condition:     Not set
+Valid:              Not set - 2023-03-24 16:56:27.135816
+===============
+<<<<<<<<<<<<<<<
+>>>>> OBJ | SOLVER | 2023-03-24 16:56:27.179790 | FINISHED
+===== Chronos Manager =====
+Root time:  2023-03-24 16:56:22.119861
+Time limit: 5
+Valid:      False (2023-03-24 16:56:27.179790)
+Size:       0
+List:       
+===============
+<<<<<<<<<<<<<<<
