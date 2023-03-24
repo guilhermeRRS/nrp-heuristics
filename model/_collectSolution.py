@@ -1,5 +1,8 @@
 # coding=utf-8
 import io, logging
+from typing import Union
+from ._contract_data import Data
+from ._contract_solution import Solution
 
 '''
 This function is responsable for collecting a solution, saved in a file as if it would be tested in RosterViewer
@@ -21,16 +24,16 @@ def readFile(path):
         
     return sucess, fileConteds
     
-def _get_solution(self, path, sets):
+def _get_solution(self, path, data: Data):
 
     solution = []
     
     sucess, fileConteds	= readFile(path)
     if(sucess):
     
-        I = len(sets["I"])
-        D = len(sets["D"])
-        T = len(sets["T"])
+        I = len(data.sets.I)
+        D = len(data.sets.D)
+        T = len(data.sets.T)
 
         fileConteds = fileConteds.split("\n")
         
@@ -47,6 +50,6 @@ def _get_solution(self, path, sets):
                     for t in range(T):
                         solution[-1][-1].append(0)
                     if line[d] != "":
-                        solution[-1][-1][sets["T"].index(line[d])] = 1
+                        solution[-1][-1][data.sets.T.index(line[d])] = 1
         
-    return sucess, solution
+    return sucess, Solution(solution)
