@@ -1,8 +1,9 @@
 import datetime
+import logging
 from typing import List, Dict
 
-CHRONOS_START = "CHRONOS_START"
-CHRONOS_STOP = "CHRONOS_STOP"
+CHRONOS_MARK_START = "CHRONOS_MARK_START"
+CHRONOS_MARK_STOP = "CHRONOS_MARK_STOP"
 
 class ChronosCounter:
 
@@ -34,34 +35,49 @@ class ChronosCounter:
 
 class Chronos:
 
-    logPath: str
     timeMarks: List[ChronosCounter]
 
     timeLimit: int
     rootTime: datetime.datetime
 
-    def __init__ (self, logPath: str, timeLimit: int):
-        self.logPath = logPath
+    origin: str
+
+    def __init__ (self, timeLimit: int):
         self.timeMarks = []
         self.timeLimit = timeLimit
+        self.origin = "CHRONOS"
         self.rootTime = datetime.datetime.now()
 
-    def printLog(self, message: str):
-        print("bla")
+        self.printObj(message = "INICIALIZATION", object = self)
+
+    def printObj(self, message: str, object: object):
+        logging.info(msg = f">>>>> OBJ | {self.origin} | {datetime.datetime.now()} | {message}")
+        logging.info(msg = object.__str__())
+        logging.info(msg = "<<<<<<<<<<<<<<<")
+
+    def printMessage(self, message: str, warning: bool):
+        if warning:
+            logging.warning(f">>>>> WARNING | {self.origin} | {datetime.datetime.now()}\n{message}\n<<<<<<<<<<<<<<<")
+        else:
+            logging.warning(f">>>>> INFO | {self.origin} | {datetime.datetime.now()}\n{message}\n<<<<<<<<<<<<<<<")
 
     def stillValid(self):
         return (datetime.datetime.now() - self.rootTime).total_seconds() < self.timeLimit
+    
+    def timeLeft(self):
+        return self.timeLimit - (datetime.datetime.now() - self.rootTime).total_seconds()
 
     def startCounter(self, name: str, log: bool = True):
-        self.timeMarks.append(ChronosCounter(name = name, log = log))
-        if(log):
-            self.printLog(f"{CHRONOS_START}: {name}")
+        chronos = ChronosCounter(name = name, log = log)
+        self.timeMarks.append(chronos)
+        if(chronos.log):
+            self.printObj(CHRONOS_MARK_START, chronos)
 
     def stopCounter(self):
         if(len(self.timeMarks) > 0):
             last = self.timeMarks.pop()
             if(last.log):
-                self.printLog(f"{CHRONOS_STOP}: {last.name}")
+                self.printObj(CHRONOS_MARK_STOP, last)
 
     def __str__(self):
         output = "===== Chronos Manager =====\n"
@@ -75,3 +91,6 @@ class Chronos:
         output += "\n==============="
         return output
             
+    def done(self):
+        self.printObj("FINISHED", self)
+        return self.__str__()

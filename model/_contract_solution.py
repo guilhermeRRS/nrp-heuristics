@@ -19,7 +19,7 @@ class Solution:
 	
         if self.solution:
 	    
-            path = path + ".sol"
+            path = path
             x = self.solution
 	    
             I = len(sets.I)

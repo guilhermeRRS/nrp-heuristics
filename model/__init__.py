@@ -3,6 +3,20 @@ from typing import Union
 from ._contract_data import Data
 from ._contract_model import Model
 from ._contract_solution import Solution
+import gurobipy as gp
+from gurobipy import GRB
+
+class GurobiOptimizedOutput:
+
+    status: int
+    solCount: int
+    
+    def __init__(self, status: int, solCount: int):
+        self.status = status
+        self.solCount = solCount
+
+    def valid(self):
+        return not (not (self.status in (GRB.OPTIMAL, GRB.TIME_LIMIT, GRB.SOLUTION_LIMIT)) or self.solCount == 0)
 
 class NurseModel() :
 
