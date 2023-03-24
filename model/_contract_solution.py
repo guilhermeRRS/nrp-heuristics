@@ -1,26 +1,31 @@
 # coding=utf-8
+import gurobipy as gp
+from gurobipy import GRB
 import string
 from typing import List, NewType
 import io
+from ._contract_data import Sets
 
 ThreeDimInt = NewType("ThreeDimInt", List[List[List[int]]]);
+ThreeDimVar = NewType("threeDimVar", List[List[List[gp.Var]]]);
 
 class Solution:
     solution: ThreeDimInt
 
-    def __init__(self, solution: ThreeDimInt):
+    def loadSolution(self, solution: ThreeDimInt):
         self.solution = solution
+        return self
 
-    def printSolution(self, path: string):
+    def printSolution(self, path: string, sets: Sets):
 	
         if self.solution:
 	    
             path = path + ".sol"
             x = self.solution
 	    
-            I = len(self.solution)
-            D = len(self.solution[0])
-            T = len(self.solution[0][0])
+            I = len(sets.I)
+            D = len(sets.D)
+            T = len(sets.T)
 
             output = ""
             for i in range(I):
@@ -29,7 +34,7 @@ class Solution:
                     shift = ""
                     for t in range(T):
                         if x[i][d][t] >= 0.5:
-                            shift = self.sets["T"][t]
+                            shift = sets.T[t]
                             break
                     line = line+shift+"\t"
                 output = output+line+"\n"
@@ -40,6 +45,20 @@ class Solution:
             return True
 		
         return False
+    
+    def getFromX(self, x: ThreeDimVar):
+        solution = []
+        I = len(x)
+        D = len(x[0])
+        T = len(x[0][0])
+        for i in range(I):
+            solution.append([])
+            for d in range(D):
+                solution[-1].append([])
+                for t in range(T):
+                    solution[-1][-1].append(0 if x[i][d][t].x < 0.5 else 1)
+        
+        return self.loadSolution(solution)
 
     def __str__(self):
         output = "===== Member of Solution =====\nInfos:\n"

@@ -3,18 +3,18 @@ from typing import List, NewType
 import gurobipy as gp
 from gurobipy import GRB
 
-twoDimVar = NewType("twoDimVar", List[List[gp.Var]]);
-threeDimVar = NewType("threeDimVar", List[List[List[gp.Var]]]);
+TwoDimVar = NewType("TwoDimVar", List[List[gp.Var]]);
+ThreeDimVar = NewType("ThreeDimVar", List[List[List[gp.Var]]]);
 
 class Model:
     m: gp.Model;
-    x: threeDimVar;
-    k: twoDimVar;
-    y: twoDimVar;
-    z: twoDimVar;
-    v: threeDimVar;
+    x: ThreeDimVar;
+    k: TwoDimVar;
+    y: TwoDimVar;
+    z: TwoDimVar;
+    v: ThreeDimVar;
 
-    def __init__(self, m: gp.Model, x: threeDimVar, k: twoDimVar, y: twoDimVar, z: twoDimVar, v: threeDimVar):
+    def __init__(self, m: gp.Model, x: ThreeDimVar, k: TwoDimVar, y: TwoDimVar, z: TwoDimVar, v: ThreeDimVar):
         self.m = m
         self.x = x
         self.k = k

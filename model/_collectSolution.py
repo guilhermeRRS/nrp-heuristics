@@ -52,4 +52,6 @@ def _get_solution(self, path, data: Data):
                     if line[d] != "":
                         solution[-1][-1][data.sets.T.index(line[d])] = 1
         
-    return sucess, Solution(solution)
+            return sucess, Solution().loadSolution(solution)
+        
+    return sucess, None
