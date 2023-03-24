@@ -5,7 +5,7 @@ from ._contract_data import Data
 from ._contract_model import Model
 from ._contract_solution import Solution
 
-class Model() :
+class NurseModel() :
 
     pathData: string
     pathModel: string
