@@ -21,6 +21,16 @@ class Sets:
         self.R_t = R_t
         self.N_i = N_i
 
+    def __str__(self):
+        output = "-----Sets:\n"
+        output += f"    Size D:     {len(self.D)}\n"
+        output += f"    Size W:     {len(self.W)}\n"
+        output += f"    Size I:     {len(self.I)}\n"
+        output += f"    Size T:     {len(self.T)}\n"
+        output += f"    R_t:        {self.R_t}\n"
+        output += f"    N_i:        {self.N_i}"
+        return output
+
 class Parameters:
     l_t:  OneDimInt;
     m_max: TwoDimInt;
@@ -52,6 +62,23 @@ class Parameters:
         self.w_min = w_min
         self.w_max = w_max
 
+    def __str__(self):
+        output = "-----Parameters:\n"
+        output += f"    l_t:        {self.l_t}\n"
+        output += f"    m_max:      {self.m_max}\n"
+        output += f"    b_min:      {self.b_min}\n"
+        output += f"    b_max:      {self.b_max}\n"
+        output += f"    c_min:      {self.c_min}\n"
+        output += f"    c_max:      {self.c_max}\n"
+        output += f"    o_min:      {self.o_min}\n"
+        output += f"    a_max:      {self.a_max}\n"
+        output += f"    q:          {self.q}\n"
+        output += f"    p:          {self.p}\n"
+        output += f"    u:          {self.u}\n"
+        output += f"    w_min:      {self.w_min}\n"
+        output += f"    w_max:      {self.w_max}"
+        return output
+
 class Data:
 
     sets: Sets
@@ -61,3 +88,12 @@ class Data:
         
         self.sets = Sets(D = D, W = W, I = I, T = T, R_t = R_t, N_i = N_i)
         self.parameters = Parameters(l_t = l_t, m_max = m_max, b_min = b_min, b_max = b_max, c_min = c_min, c_max = c_max, o_min = o_min, a_max = a_max, q = q, p = p, u = u, w_min = w_min, w_max = w_max)
+
+
+    def __str__(self):
+        output =  "===== Member of Data =====\n"
+        output += self.sets.__str__()
+        output += "\n"
+        output += self.parameters.__str__()
+        output += "\n==============="
+        return output

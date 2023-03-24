@@ -1,7 +1,7 @@
 # coding=utf-8
 import io, logging
 from typing import Union
-from ._contract_data import *
+from ._contract_data import Data
 
 def readFile(path):
     sucess = True

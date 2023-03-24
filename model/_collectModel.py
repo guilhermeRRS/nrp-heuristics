@@ -1,5 +1,7 @@
 # coding=utf-8
 import string
+from typing import Union
+from ._contract_model import Model
 
 import gurobipy as gp
 from gurobipy import GRB
@@ -53,4 +55,4 @@ def _get_model(self, path: string, I: int, D: int, T: int, W: int):
 			y[-1].append(m.getVarByName("y["+str(d)+"]["+str(t)+"]"))
 			z[-1].append(m.getVarByName("z["+str(d)+"]["+str(t)+"]"))
 	
-	return True, {"m": m, "x": x, "k": k, "y": y, "z": z, "v": v}
+	return True, Model(m = m, x = x, k = k, y = y, z = z, v = v)
