@@ -1,7 +1,6 @@
 # coding=utf-8
 import gurobipy as gp
 from gurobipy import GRB
-import string
 from typing import List, NewType
 import io
 from ._contract_data import Sets
@@ -16,7 +15,7 @@ class Solution:
         self.solution = solution
         return self
 
-    def printSolution(self, path: string, sets: Sets):
+    def printSolution(self, path: str, sets: Sets):
 	
         if self.solution:
 	    

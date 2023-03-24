@@ -1,5 +1,4 @@
 # coding=utf-8
-import string
 from typing import Union
 from ._contract_model import Model
 
@@ -15,7 +14,7 @@ and so on
 ANY BROKEN MODEL (NOT FOLLOWING THE 'STANDARDS') WILL CAUSE UNEXPECTED BEHAVIOR
 
 '''
-def _get_model(self, path: string, I: int, D: int, T: int, W: int):
+def _get_model(self, path: str, I: int, D: int, T: int, W: int):
 	
 	'''
 	m -> model
