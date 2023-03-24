@@ -1,9 +1,35 @@
 # coding=utf-8
-import logging
 import gurobipy as gp
 from gurobipy import GRB
+from ._contract_data import Data
 
-def _write_model(self, path, sets, parameters, name = "Model"):
+def _write_model(self, path, data: Data, name = "Model"):
+
+    sets = {}
+
+    sets["I"] = Data.sets.I
+    sets["D"] = Data.sets.D
+    sets["T"] = Data.sets.T
+    sets["W"] = Data.sets.W
+    sets["R_t"] = Data.sets.R_t
+    sets["N_i"] = Data.sets.N_i
+    
+    parameters = {}
+
+    parameters["l_t"] = Data.parameters.l_t
+    parameters["m_max"] = Data.parameters.m_max
+    parameters["b_min"] = Data.parameters.b_min
+    parameters["b_max"] = Data.parameters.b_max
+    parameters["c_min"] = Data.parameters.c_min
+    parameters["c_max"] = Data.parameters.c_max
+    parameters["o_min"] = Data.parameters.o_min
+    parameters["a_max"] = Data.parameters.a_max
+    parameters["q"] = Data.parameters.q
+    parameters["p"] = Data.parameters.p
+    parameters["u"] = Data.parameters.u
+    parameters["w_min"] = Data.parameters.w_min
+    parameters["w_max"] = Data.parameters.w_max
+        
     
     I = len(sets["I"])
     D = len(sets["D"])
@@ -93,6 +119,5 @@ def _write_model(self, path, sets, parameters, name = "Model"):
     try:
         m.write(path)
     except:
-        logging.exception("Not able to save model ("+name+") "+path)
         return False
     return True

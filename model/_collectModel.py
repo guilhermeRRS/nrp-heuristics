@@ -1,5 +1,5 @@
 # coding=utf-8
-import logging
+import string
 
 import gurobipy as gp
 from gurobipy import GRB
@@ -13,7 +13,7 @@ and so on
 ANY BROKEN MODEL (NOT FOLLOWING THE 'STANDARDS') WILL CAUSE UNEXPECTED BEHAVIOR
 
 '''
-def _get_model(self, path, I, D, T, W):
+def _get_model(self, path: string, I: int, D: int, T: int, W: int):
 	
 	'''
 	m -> model
@@ -25,8 +25,6 @@ def _get_model(self, path, I, D, T, W):
 		m = gp.read(path)
 
 	except:
-
-		logging.exception("Model not found "+path)
 		return False, None
 	
 	x = []

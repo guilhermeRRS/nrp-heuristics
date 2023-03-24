@@ -1,5 +1,7 @@
 # coding=utf-8
 import io, logging
+from typing import Union
+from ._contract_data import *
 
 def readFile(path):
     sucess = True
@@ -183,9 +185,12 @@ def _get_data(self):
         
         sucess, sets, parameters = convertFormat(allData)
         
-        return sucess, sets, parameters
+        return True, Data(D = sets["D"], W = sets["W"], I = sets["I"], T = sets["T"], R_t = sets["R_t"], N_i = sets["N_i"],
+                                l_t = parameters["l_t"], m_max = parameters["m_max"], b_min = parameters["b_min"], b_max = parameters["b_max"],
+                                c_min = parameters["c_min"], c_max = parameters["c_max"], o_min = parameters["o_min"], a_max = parameters["a_max"],
+                                q = parameters["q"], p = parameters["p"], u = parameters["u"], w_min = parameters["w_min"], w_max = parameters["w_max"])
         
-    return False, None, None
+    return False, None
     
 def convertFormat(data):
 
