@@ -5,9 +5,11 @@ from model import NurseModel
 from solver import Solver
 from chronos import Chronos
 
-PATH_DATA = "instancias/"
-PATH_MODEL = "modelos/"
-#PATH_GET_SOLUTION = "initial/"
+cluster = True
+
+PATH_DATA = "instances/" if cluster else "../instancias/"
+PATH_MODEL = "modelos/" if cluster else "../modelos/"
+#PATH_GET_SOLUTION = "initial/" if cluster else "../initial/"
 PATH_SAVE_SOLUTION = "o_solutions/"
 PAT_LOG = "o_logs/"
 
@@ -29,9 +31,10 @@ nurse.getModel()
 
 chronos = Chronos(timeLimit = timeLimit)
 
-solver = Solver(nurseModel = nurse, chronos = chronos)
-success, nurse = solver.run()
+if nurse.s_data and nurse.s_model:
+    solver = Solver(nurseModel = nurse, chronos = chronos)
+    success, nurse = solver.run()
 
-print(success)
-print(nurse.solution.printSolution(f"{PATH_SAVE_SOLUTION}{instance}_{description}.sol", nurse.data.sets))
-print(chronos.done())
+    print(success)
+    print(nurse.solution.printSolution(f"{PATH_SAVE_SOLUTION}{instance}_{description}.sol", nurse.data.sets))
+    print(chronos.done())
