@@ -1,15 +1,19 @@
 # coding=utf-8
+
+import gurobipy as gp
+from gurobipy import GRB
+
 import logging
 import sys
 from model import NurseModel
 from solver import Solver
 from chronos import Chronos
 
-cluster = True
+cluster = len((sys.argv[1:])) == 3
 
-PATH_DATA = "instances/" if cluster else "../instancias/"
-PATH_MODEL = "modelos/" if cluster else "../modelos/"
-#PATH_GET_SOLUTION = "initial/" if cluster else "../initial/"
+PATH_DATA = "instances/dados/" if cluster else "../instancias/"
+PATH_MODEL = "instances/modelos/" if cluster else "../modelos/"
+#PATH_GET_SOLUTION = "instances/sol/" if cluster else "../initial/"
 PATH_SAVE_SOLUTION = "o_solutions/"
 PAT_LOG = "o_logs/"
 
@@ -23,7 +27,7 @@ logging.getLogger("gurobipy.gurobipy").disabled = True
 nurse = NurseModel()
 nurse.setPathData(f"{PATH_DATA}Instance{instance}.txt")
 nurse.setPathModel(f"{PATH_MODEL}modelo{instance}.lp")
-#nurse.setPathSolution(f"{PATH_GET_SOLUTION}{instance}.sol")
+#nurse.setPathSolution(f"{PATH_GET_SOLUTION}{instance}.txt")
 
 nurse.getData()
 nurse.getModel()
