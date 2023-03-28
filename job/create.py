@@ -1,7 +1,7 @@
 import json, io, sys, os
 
 description = "solver"
-time = 3600
+time = 900
 
 description = f"{description}_{time}"
 
