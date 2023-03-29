@@ -1,6 +1,11 @@
 # coding=utf-8
 from typing import List, NewType
 
+SETS = "SETS"
+PARAMETERS = "PARAMETERS"
+
+MEMBER_OF_DATA = "MEMBER_OF_DATA"
+
 OneDimInt = NewType("OneDimInt", List[int]);
 TwoDimInt = NewType("TwoDimInt", List[List[int]]);
 ThreeDimInt = NewType("ThreeDimInt", List[List[List[int]]]);
@@ -22,7 +27,7 @@ class Sets:
         self.N_i = N_i
 
     def __str__(self):
-        output = "-----Sets:\n"
+        output = f"-----{SETS}:\n"
         output += f"    Size D:     {len(self.D)}\n"
         output += f"    Size W:     {len(self.W)}\n"
         output += f"    Size I:     {len(self.I)}\n"
@@ -63,7 +68,7 @@ class Parameters:
         self.w_max = w_max
 
     def __str__(self):
-        output = "-----Parameters:\n"
+        output = f"-----{PARAMETERS}:\n"
         output += f"    l_t:        {self.l_t}\n"
         output += f"    m_max:      {self.m_max}\n"
         output += f"    b_min:      {self.b_min}\n"
@@ -91,7 +96,7 @@ class Data:
 
 
     def __str__(self):
-        output =  "===== Member of Data =====\n"
+        output = f"===== {MEMBER_OF_DATA} =====\n"
         output += self.sets.__str__()
         output += "\n"
         output += self.parameters.__str__()

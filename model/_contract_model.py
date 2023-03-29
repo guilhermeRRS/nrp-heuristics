@@ -3,6 +3,8 @@ from typing import List, NewType
 import gurobipy as gp
 from gurobipy import GRB
 
+MEMBER_OF_MODEL = "MEMBER_OF_MODEL"
+
 TwoDimVar = NewType("TwoDimVar", List[List[gp.Var]]);
 ThreeDimVar = NewType("ThreeDimVar", List[List[List[gp.Var]]]);
 
@@ -23,7 +25,7 @@ class Model:
         self.v = v
 
     def __str__(self):
-        output = "===== Member of Model =====\nInfos:\n"
+        output = f"===== {MEMBER_OF_MODEL} =====\nInfos:\n"
         output += f"I: {len(self.x)}\n"
         output += f"D: {len(self.x[0])}\n"
         output += f"T: {len(self.x[0][0])}\n"
