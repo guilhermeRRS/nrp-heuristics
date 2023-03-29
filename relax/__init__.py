@@ -18,6 +18,7 @@ class Relax(MipInterface):
     def __init__(self, nurseModel: NurseModel, chronos: Chronos, iPartitionSize: PartitionSize, dPartitionSize: PartitionSize, tPartitionSize:PartitionSize = None):
         super().__init__(nurseModel.model)
 
+        self.nurseModel = nurseModel
         self.chronos = chronos
         self.chronos.origin = RELAX
         
@@ -34,12 +35,13 @@ class Relax(MipInterface):
             m.setParam("Solutionlimit", 1)
         
         self.relaxWindow(partition = self.partitionHolder.all())
-        while self.partitionHolder.partitionSize() > 0:
+        while self.partitionHolder.partitionSize() > 0 and success:
             success = False
-            self.intWindow(partition = self.partitionHolder.popPartition())
+            currentPartition = self.partitionHolder.popPartition()
+            self.intWindow(partition = currentPartition)
 
             if self.chronos.stillValidRestrict():
-                m.setParam("TimeLimit", self.chronos.timeLeft())
+                m.setParam("TimeLimit", self.chronos.timeLeft()/(self.partitionHolder.partitionSize()+1))
             
                 self.chronos.startCounter(START_ITERATION)
                 m.optimize()
@@ -51,6 +53,8 @@ class Relax(MipInterface):
 
                 if gurobiReturn.valid():
 
+                    self.fixWindows(currentPartition)
+                    input()
                     success = True
                 
                 else:

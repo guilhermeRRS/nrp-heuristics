@@ -49,31 +49,18 @@ class MipInterface(ABC):
                 self.model.y[d][t].vtype = GRB.INTEGER
                 self.model.z[d][t].vtype = GRB.INTEGER
 
-    def fixWindows(self, i0:int, i9:int, d0:int, d9:int, t0:int, t9:int):
-        I = len(self.model.x)
-        D = len(self.model.x[0])
-        T = len(self.model.x[0][0])
-        assert i0 >= 0 and i9 < I
-        assert d0 >= 0 and d9 < D
-        assert t0 >= 0 and t9 < T
+    def fixWindows(self, partition: Partition):
 
-        for i in range(I):
-            for d in range(D):
-                for t in range(T):
+        for i in range(partition.i0, partition.i9):
+            for d in range(partition.d0, partition.d9):
+                for t in range(partition.t0, partition.t9):
                     newVal = 1 if self.model.x[i][d][t].x >= 0.5 else 0
                     self.model.x[i][d][t].lb = newVal
                     self.model.x[i][d][t].ub = newVal
 
-    def unfixWindows(self, i0:int, i9:int, d0:int, d9:int, t0:int, t9:int):
-        I = len(self.model.x)
-        D = len(self.model.x[0])
-        T = len(self.model.x[0][0])
-        assert i0 >= 0 and i9 < I
-        assert d0 >= 0 and d9 < D
-        assert t0 >= 0 and t9 < T
-
-        for i in range(I):
-            for d in range(D):
-                for t in range(T):
+    def unfixWindows(self, partition: Partition):
+        for i in range(partition.i0, partition.i9):
+            for d in range(partition.d0, partition.d9):
+                for t in range(partition.t0, partition.t9):
                     self.model.x[i][d][t].lb = 0
                     self.model.x[i][d][t].ub = 1
