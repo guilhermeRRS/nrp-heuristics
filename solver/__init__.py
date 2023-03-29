@@ -4,6 +4,13 @@ from model import NurseModel, Solution, GurobiOptimizedOutput
 import gurobipy as gp
 from gurobipy import GRB
 
+SOLVER = "SOLVER"
+START_OPTIMIZE = "START_OPTIMIZE"
+
+SOLVER_GUROBI_OUTPUT = "SOLVER_GUROBI_OUTPUT"
+SOLVER_ITERATION_NO_SOLUTION = "SOLVER_ITERATION_NO_SOLUTION"
+SOLVER_ITERATION_NO_TIME = "SOLVER_ITERATION_NO_TIME"
+
 class Solver:
 
     nurseModel: NurseModel
@@ -12,23 +19,34 @@ class Solver:
     def __init__(self, nurseModel: NurseModel, chronos: Chronos):
         self.nurseModel = nurseModel
         self.chronos = chronos
-        self.chronos.origin = "SOLVER"
+        self.chronos.origin = SOLVER
 
-    def run(self):
+    def run(self, fast:bool = False):
         m = self.nurseModel.model.m
-        timeLeft = self.chronos.timeLeft()
-        if timeLeft > 0:
+        if self.chronos.stillValidRestrict():
             
-            m.setParam("TimeLimit", timeLeft)
+            m.setParam("TimeLimit", self.chronos.timeLeft())
+            if fast:
+                m.setParam("Solutionlimit", 1)
             
-            self.chronos.startCounter("START OPTIMIZE")
+            self.chronos.startCounter(START_OPTIMIZE)
             m.optimize()
             self.chronos.stopCounter()
 
-            if GurobiOptimizedOutput(m.Status, m.SolCount).valid():
+            gurobiReturn = GurobiOptimizedOutput(m.Status, m.SolCount)
+
+            self.chronos.printObj(SOLVER_GUROBI_OUTPUT, gurobiReturn)
+
+            if gurobiReturn.valid():
 
                 self.nurseModel.solution = Solution().getFromX(self.nurseModel.model.x)
                 self.nurseModel.s_solution = True
                 return True, self.nurseModel
+            
+            else:
+                self.chronos.printMessage(SOLVER_ITERATION_NO_SOLUTION, False)
+            
+        else:
+            self.chronos.printMessage(SOLVER_ITERATION_NO_TIME, False)
             
         return False, self.nurseModel

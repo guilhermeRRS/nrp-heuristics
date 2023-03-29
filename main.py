@@ -6,6 +6,7 @@ from gurobipy import GRB
 import logging
 import sys
 from model import NurseModel
+#from relax import Relax
 from solver import Solver
 from chronos import Chronos
 
@@ -36,9 +37,17 @@ nurse.getModel()
 chronos = Chronos(timeLimit = timeLimit)
 
 if nurse.s_data and nurse.s_model:
+    
     solver = Solver(nurseModel = nurse, chronos = chronos)
     success, nurse = solver.run()
 
     print(success)
-    print(nurse.solution.printSolution(f"{PATH_SAVE_SOLUTION}{instance}_{description}.sol", nurse.data.sets))
+    if success:
+        print(nurse.solution.printSolution(f"{PATH_SAVE_SOLUTION}{instance}_{description}.sol", nurse.data.sets))
+    
     print(chronos.done())
+
+    '''
+    relax = Relax(nurseModel = nurse, chronos = chronos, windowsPattern = "aaa")
+    relax.run()
+    '''

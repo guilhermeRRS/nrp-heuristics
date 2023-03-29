@@ -2,8 +2,15 @@ import datetime
 import logging
 from typing import List, Dict
 
+CHRONOS = "CHRONOS"
+INICIALIZATION = "INICIALIZATION"
+FINISHED = "FINISHED"
+
 CHRONOS_MARK_START = "CHRONOS_MARK_START"
 CHRONOS_MARK_STOP = "CHRONOS_MARK_STOP"
+
+CHRONOS_COUNTER = "CHRONOS_COUNTER"
+CHRONOS_MANAGER = "CHRONOS_MANAGER"
 
 class ChronosCounter:
 
@@ -24,7 +31,7 @@ class ChronosCounter:
         return None
 
     def __str__(self):
-        output = "===== Chronos Counter =====:\n"
+        output = f"===== {CHRONOS_COUNTER} =====:\n"
         output += f"Name:               {self.name}\n"
         output += f"Log:                {self.log}\n"
         output += f"Start:              {self.start}\n"
@@ -45,30 +52,33 @@ class Chronos:
     def __init__ (self, timeLimit: int):
         self.timeMarks = []
         self.timeLimit = timeLimit
-        self.origin = "CHRONOS"
+        self.origin = CHRONOS
         self.rootTime = datetime.datetime.now()
 
-        self.printObj(message = "INICIALIZATION", object = self)
+        self.printObj(message = INICIALIZATION, object = self)
 
     def printObj(self, message: str, object: object):
-        logging.info(msg = f">>>>> OBJ | {self.origin} | {datetime.datetime.now()} | {message}")
+        logging.info(msg = f"\n>>>>> OBJ | {self.origin} | {datetime.datetime.now()} | {message}\n")
         logging.info(msg = object.__str__())
-        logging.info(msg = "<<<<<<<<<<<<<<<")
+        logging.info(msg = "\n<<<<<<<<<<<<<<<\n")
 
     def printMessage(self, message: str, warning: bool):
         if warning:
-            logging.warning(f">>>>> WARNING | {self.origin} | {datetime.datetime.now()}\n{message}\n<<<<<<<<<<<<<<<")
+            logging.warning(f"\n>>>>> WARNING | {self.origin} | {datetime.datetime.now()}\n\n{message}\n\n<<<<<<<<<<<<<<<\n")
         else:
-            logging.warning(f">>>>> INFO | {self.origin} | {datetime.datetime.now()}\n{message}\n<<<<<<<<<<<<<<<")
+            logging.warning(f"\n>>>>> INFO | {self.origin} | {datetime.datetime.now()}\n\n{message}\n\n<<<<<<<<<<<<<<<\n")
 
     def stillValid(self):
         return (datetime.datetime.now() - self.rootTime).total_seconds() < self.timeLimit
+    
+    def stillValidRestrict(self):
+        return (datetime.datetime.now() - self.rootTime).total_seconds() + 1 < self.timeLimit
     
     def timeLeft(self):
         return self.timeLimit - (datetime.datetime.now() - self.rootTime).total_seconds()
 
     def startCounter(self, name: str, log: bool = True):
-        chronos = ChronosCounter(name = name, log = log)
+        chronos = ChronosCounter(name = name, log = log, stop = self.timeLeft())
         self.timeMarks.append(chronos)
         if(chronos.log):
             self.printObj(CHRONOS_MARK_START, chronos)
@@ -80,7 +90,7 @@ class Chronos:
                 self.printObj(CHRONOS_MARK_STOP, last)
 
     def __str__(self):
-        output = "===== Chronos Manager =====\n"
+        output = f"===== {CHRONOS_MANAGER} =====\n"
         output += f"Root time:  {self.rootTime}\n"
         output += f"Time limit: {self.timeLimit}\n"
         output += f"Valid:      {self.stillValid()} ({datetime.datetime.now()})\n"
@@ -92,5 +102,5 @@ class Chronos:
         return output
             
     def done(self):
-        self.printObj("FINISHED", self)
+        self.printObj(FINISHED, self)
         return self.__str__()
