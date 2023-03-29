@@ -106,4 +106,4 @@ class PartitionHolder:
         return output
     
     def partitionSize(self):
-        return len(self.partitionSize)
+        return len(self.partitions)
