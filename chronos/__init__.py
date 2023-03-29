@@ -62,7 +62,7 @@ class Chronos:
         logging.info(msg = object.__str__())
         logging.info(msg = "\n<<<<<<<<<<<<<<<\n")
 
-    def printMessage(self, message: str, warning: bool):
+    def printMessage(self, message: str, warning: bool = False):
         if warning:
             logging.warning(f"\n>>>>> WARNING | {self.origin} | {datetime.datetime.now()}\n\n{message}\n\n<<<<<<<<<<<<<<<\n")
         else:

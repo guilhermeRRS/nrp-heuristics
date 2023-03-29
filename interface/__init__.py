@@ -3,6 +3,8 @@ from model import Model
 import gurobipy as gp
 from gurobipy import GRB
 
+from partition import Partition
+
 class MipInterface(ABC):
 
     model:Model
@@ -10,16 +12,10 @@ class MipInterface(ABC):
     def __init__(self, model:Model):
         self.model = model
 
-    def relaxWindow(self, i0:int, i9:int, d0:int, d9:int, t0:int, t9:int):
-        I = len(self.model.x)
-        D = len(self.model.x[0])
-        T = len(self.model.x[0][0])
-        assert i0 >= 0 and i9 < I
-        assert d0 >= 0 and d9 < D
-        assert t0 >= 0 and t9 < T
-        for d in range(D):
-            for i in range(I):
-                for t in range(T):
+    def relaxWindow(self, partition: Partition):
+        for d in range(partition.d0, partition.d9):
+            for i in range(partition.i0, partition.i9):
+                for t in range(partition.t0, partition.t9):
                     
                     self.model.x[i][d][t].vtype = GRB.CONTINUOUS
                     self.model.x[i][d][t].lb = 0
@@ -32,23 +28,16 @@ class MipInterface(ABC):
                     self.model.k[i][w].vtype = GRB.CONTINUOUS
                     self.model.k[i][w].lb = 0
                     self.model.k[i][w].ub = 1
-            for t in range(T):
+            for t in range(partition.t0, partition.t9):
                 self.model.y[d][t].vtype = GRB.CONTINUOUS
                 self.model.y[d][t].lb = 0
                 self.model.z[d][t].vtype = GRB.CONTINUOUS
                 self.model.z[d][t].lb = 0
 
-    def intWindow(self, i0:int, i9:int, d0:int, d9:int, t0:int, t9:int):
-        I = len(self.model.x)
-        D = len(self.model.x[0])
-        T = len(self.model.x[0][0])
-        assert i0 >= 0 and i9 < I
-        assert d0 >= 0 and d9 < D
-        assert t0 >= 0 and t9 < T
-
-        for d in range(D):
-            for i in range(I):
-                for t in range(T):
+    def intWindow(self, partition: Partition):
+        for d in range(partition.d0, partition.d9):
+            for i in range(partition.i0, partition.i9):
+                for t in range(partition.t0, partition.t9):
                     
                     self.model.x[i][d][t].vtype = GRB.BINARY
 
@@ -56,7 +45,7 @@ class MipInterface(ABC):
                 if d % 7 == 6:
                     w = int((d - 6)/7)
                     self.model.k[i][w].vtype = GRB.BINARY
-            for t in range(T):
+            for t in range(partition.t0, partition.t9):
                 self.model.y[d][t].vtype = GRB.INTEGER
                 self.model.z[d][t].vtype = GRB.INTEGER
 
