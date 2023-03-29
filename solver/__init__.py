@@ -23,11 +23,13 @@ class Solver:
 
     def run(self, fast:bool = False):
         m = self.nurseModel.model.m
+            
+        if fast:
+            m.setParam("Solutionlimit", 1)
+            
         if self.chronos.stillValidRestrict():
             
             m.setParam("TimeLimit", self.chronos.timeLeft())
-            if fast:
-                m.setParam("Solutionlimit", 1)
             
             self.chronos.startCounter(START_OPTIMIZE)
             m.optimize()

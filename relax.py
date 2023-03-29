@@ -1,20 +1,21 @@
 # coding=utf-8
 
+FAILED_TO_SOLVE = "FAILED_TO_SOLVE"
+
 import gurobipy as gp
 from gurobipy import GRB
 
 import logging
 import sys
 from model import NurseModel
-#from relax import Relax
-from solver import Solver
+from partition import PartitionSize
+from relax import Relax
 from chronos import Chronos
 
 cluster = len((sys.argv[1:])) == 3
 
 PATH_DATA = "instances/dados/" if cluster else "../instancias/"
 PATH_MODEL = "instances/modelos/" if cluster else "../modelos/"
-#PATH_GET_SOLUTION = "instances/sol/" if cluster else "../initial/"
 PATH_SAVE_SOLUTION = "o_solutions/"
 PAT_LOG = "o_logs/"
 
@@ -28,26 +29,21 @@ logging.getLogger("gurobipy.gurobipy").disabled = True
 nurse = NurseModel()
 nurse.setPathData(f"{PATH_DATA}Instance{instance}.txt")
 nurse.setPathModel(f"{PATH_MODEL}modelo{instance}.lp")
-#nurse.setPathSolution(f"{PATH_GET_SOLUTION}{instance}.txt")
 
 nurse.getData()
 nurse.getModel()
-#nurse.getSolution()
 
 chronos = Chronos(timeLimit = timeLimit)
 
 if nurse.s_data and nurse.s_model:
     
-    solver = Solver(nurseModel = nurse, chronos = chronos)
-    success, nurse = solver.run()
+    relax = Relax(nurseModel = nurse, chronos = chronos, iPartitionSize = PartitionSize.ALL, dPartitionSize = PartitionSize.QUARTER)
+    success, nurse = relax.run()
 
     print(success)
     if success:
         print(nurse.solution.printSolution(f"{PATH_SAVE_SOLUTION}{instance}_{description}.sol", nurse.data.sets))
+    else:
+        chronos.printMessage(FAILED_TO_SOLVE)
     
     print(chronos.done())
-
-    '''
-    relax = Relax(nurseModel = nurse, chronos = chronos, windowsPattern = "aaa")
-    relax.run()
-    '''
