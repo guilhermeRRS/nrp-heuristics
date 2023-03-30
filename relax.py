@@ -12,7 +12,7 @@ from partition import PartitionSize
 from relax import Relax
 from chronos import Chronos
 
-cluster = len((sys.argv[1:])) == 4
+cluster = len((sys.argv[1:])) == 6
 
 PATH_DATA = "instances/dados/" if cluster else "../instancias/"
 PATH_MODEL = "instances/modelos/" if cluster else "../modelos/"
