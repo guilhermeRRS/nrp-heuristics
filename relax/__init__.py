@@ -54,7 +54,6 @@ class Relax(MipInterface):
                 if gurobiReturn.valid():
 
                     self.fixWindows(currentPartition)
-                    input()
                     success = True
                 
                 else:
