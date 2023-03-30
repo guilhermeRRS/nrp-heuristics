@@ -29,6 +29,9 @@ class ChronosCounter:
         if(self.stop != None):
             return (datetime.datetime.now() - self.start).total_seconds() < self.stop
         return None
+    
+    def timeLeft(self):
+        return self.stop - (datetime.datetime.now() - self.start).total_seconds()
 
     def __str__(self):
         output = f"===== {CHRONOS_COUNTER} =====:\n"
@@ -37,6 +40,7 @@ class ChronosCounter:
         output += f"Start:              {self.start}\n"
         output += f"Stop Condition:     {self.stop if self.stop != None else 'Not set'}\n"
         output += f"Valid:              {self.stillValid() if self.stop != None else 'Not set'} - {datetime.datetime.now()}\n"
+        output += f"TimeLeft:           {self.timeLeft() if self.stillValid() == True else 0}\n"
         output += "==============="
         return output
 
