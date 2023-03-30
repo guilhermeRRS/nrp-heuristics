@@ -13,18 +13,25 @@ class GurobiOptimizedOutput:
 
     status: int
     solCount: int
+    m: gp.Model
     
-    def __init__(self, status: int, solCount: int):
-        self.status = status
-        self.solCount = solCount
+    def __init__(self, m: gp.Model):
+        self.status = m.Status
+        self.solCount = m.SolCount
+        self.m = m
 
     def valid(self):
         return not (not (self.status in (GRB.OPTIMAL, GRB.TIME_LIMIT, GRB.SOLUTION_LIMIT)) or self.solCount == 0)
     
     def __str__(self):
+        obj = -1
+        if self.valid():
+            obj = self.m.objVal
         output =  f"===== {GUROBI_OPTIMIZE_OUTPUT} =====\nInfos:\n"
         output += f"Status:      {self.status}\n"
         output += f"SolCount:    {self.solCount}\n"
+        output += f"Valid:       {self.valid()}\n"
+        output += f"Obj:         {obj}\n"
         output += "==============="
         return output
 

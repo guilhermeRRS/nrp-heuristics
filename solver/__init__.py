@@ -35,7 +35,7 @@ class Solver:
             m.optimize()
             self.chronos.stopCounter()
 
-            gurobiReturn = GurobiOptimizedOutput(m.Status, m.SolCount)
+            gurobiReturn = GurobiOptimizedOutput(m)
 
             self.chronos.printObj(SOLVER_GUROBI_OUTPUT, gurobiReturn)
 
