@@ -1,3 +1,4 @@
-/job
+/jobSolver
+/jobRelax
 *.sol
 *.log
