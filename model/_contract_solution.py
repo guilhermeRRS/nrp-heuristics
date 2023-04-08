@@ -58,8 +58,52 @@ class Solution:
                 solution[-1].append([])
                 for t in range(T):
                     solution[-1][-1].append(0 if x[i][d][t].x < 0.5 else 1)
-        
+                    
         return self.loadSolution(solution)
+    
+    def generatePartialX(self, success: bool, x: ThreeDimVar, path: str, sets: Sets):
+        solution = []
+        I = len(x)
+        D = len(x[0])
+        T = len(x[0][0])
+        for i in range(I):
+            solution.append([])
+            for d in range(D):
+                solution[-1].append([])
+                for t in range(T):
+                    if(success):
+                        solution[-1][-1].append([x[i][d][t].vType,x[i][d][t].x])
+                    else:
+                        solution[-1][-1].append([x[i][d][t].vType,None])
+        
+        output = ""
+        for i in range(I):
+            line = ""
+            for d in range(D):
+                shift = self.summarizePartial(solution[i][d], T)
+                line = line+shift
+            output = output+line+"\n"
+            
+        solfile = io.open(path, "w+", encoding = "utf8")
+        solfile.write(output)
+
+    def summarizePartial(self, solutionBlock, T:int):
+        kind = solutionBlock[0][0]
+        mixed = True
+        rangedContinuous = False
+        for t in range(T):
+            if kind != solutionBlock[t][0]:
+                mixed = False
+            if solutionBlock[t][1] > 0.01 and solutionBlock[t][1] < 0.99:
+                rangedContinuous = True
+        if kind == GRB.CONTINUOUS:
+            kind = "C"
+        elif kind == GRB.INTEGER:
+            kind = "I"
+        else:
+            kind = "B"
+        rangedContinuous = "1" if rangedContinuous else "0"
+        return f'[{kind},{rangedContinuous}]'
 
     def __str__(self):
         output = f"===== {MEMBER_OF_SOLUTION} =====\nInfos:\n"

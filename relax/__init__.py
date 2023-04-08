@@ -15,7 +15,7 @@ class Relax(MipInterface):
     partitionHolder: PartitionHolder
     chronos: Chronos
 
-    def __init__(self, nurseModel: NurseModel, chronos: Chronos, iPartitionSize: PartitionSize, dPartitionSize: PartitionSize, tPartitionSize:PartitionSize = None):
+    def __init__(self, nurseModel: NurseModel, chronos: Chronos, iPartitionSize: PartitionSize, dPartitionSize: PartitionSize, tPartitionSize:PartitionSize = None, pathPartialSols: str = None):
         super().__init__(nurseModel.model)
 
         self.nurseModel = nurseModel
@@ -25,9 +25,13 @@ class Relax(MipInterface):
         self.partitionHolder = PartitionHolder(nurseModel.I, nurseModel.D, nurseModel.T)
         self.partitionHolder.createPartition(iPartitionSize, dPartitionSize, tPartitionSize)
 
+        self.pathPartialSols = pathPartialSols
+
     def run(self, fast:bool = False):
         
         success = True
+
+        iteration = 0
 
         m = self.nurseModel.model.m
         
@@ -36,6 +40,7 @@ class Relax(MipInterface):
         
         self.relaxWindow(partition = self.partitionHolder.all())
         while self.partitionHolder.partitionSize() > 0 and success:
+            iteration += 1
             success = False
             currentPartition = self.partitionHolder.popPartition()
             self.intWindow(partition = currentPartition)
@@ -50,6 +55,8 @@ class Relax(MipInterface):
                 gurobiReturn = GurobiOptimizedOutput(m)
 
                 self.chronos.printObj(SOLVER_GUROBI_OUTPUT, gurobiReturn)
+
+                Solution().generatePartialX(gurobiReturn.valid(), self.nurseModel.model.x, self.pathPartialSols+f'.{iteration}.partial', self.nurseModel.data.sets)
 
                 if gurobiReturn.valid():
 
