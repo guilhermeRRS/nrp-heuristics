@@ -47,10 +47,13 @@ class PartitionHolder:
     def all(self):
         return Partition(i0 = 0, i9 = self.I, d0 = 0, d9 = self.D, t0 = 0, t9 = self.T)
 
-    def _segmentPartition(self, size: int, step: PartitionSize):
+    def _segmentPartition(self, size: int, step: PartitionSize, week: bool = False):
         
         if step == PartitionSize.ALL:
             return [[0, size]]
+
+        if(week):
+            size = int(size/7)
 
         if (step == PartitionSize.HALF and size < 2) or (step == PartitionSize.QUARTER and size < 4):
             step = PartitionSize.UNITARY
@@ -74,6 +77,9 @@ class PartitionHolder:
             thirdMark = secondMark + littleStep + (0 if size % 4 < 3 else 1)
             output = [[0, firstMark], [firstMark, secondMark], [secondMark, thirdMark], [thirdMark, size]]
 
+        if(week):
+            for i in range(len(output)):
+                output[i] = [7*output[i][0],7*output[i][1]]
 
         return output
 
@@ -82,7 +88,7 @@ class PartitionHolder:
             tPartitionSize = PartitionSize.ALL
 
         iSegments = self._segmentPartition(self.I, iPartitionSize)
-        dSegments = self._segmentPartition(self.D, dPartitionSize)
+        dSegments = self._segmentPartition(self.D, dPartitionSize, week=True)
         tSegments = self._segmentPartition(self.T, tPartitionSize)
 
         self.partitions = []

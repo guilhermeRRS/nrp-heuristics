@@ -43,6 +43,7 @@ class Relax(MipInterface):
             iteration += 1
             success = False
             currentPartition = self.partitionHolder.popPartition()
+            print(currentPartition)
             self.intWindow(partition = currentPartition)
 
             if self.chronos.stillValidRestrict():
