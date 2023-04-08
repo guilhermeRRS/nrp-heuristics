@@ -53,7 +53,7 @@ chronos = Chronos(timeLimit = timeLimit)
 
 if nurse.s_data and nurse.s_model:
     
-    relax = Relax(nurseModel = nurse, chronos = chronos, iPartitionSize = PartitionSize.ALL, dPartitionSize = PartitionSize.QUARTER)
+    relax = Relax(nurseModel = nurse, chronos = chronos, iPartitionSize = PartitionSize.ALL, dPartitionSize = PartitionSize.QUARTER, pathPartialSols = f"{PATH_SAVE_SOLUTION}{instance}_{description}_{iPartition._name_}_{dPartition._name_}_{flagFast}")
     success, nurse = relax.run(fast = fast)
 
     print(success)
