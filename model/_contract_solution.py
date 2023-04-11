@@ -72,9 +72,9 @@ class Solution:
                 solution[-1].append([])
                 for t in range(T):
                     if(success):
-                        solution[-1][-1].append([x[i][d][t].vType,x[i][d][t].x])
+                        solution[-1][-1].append([x[i][d][t].vType,x[i][d][t].x,x[i][d][t].lb == x[i][d][t].ub])
                     else:
-                        solution[-1][-1].append([x[i][d][t].vType,None])
+                        solution[-1][-1].append([x[i][d][t].vType,None,x[i][d][t].lb == x[i][d][t].ub])
         
         output = ""
         for i in range(I):
@@ -91,11 +91,15 @@ class Solution:
         kind = solutionBlock[0][0]
         mixed = True
         rangedContinuous = False
+        fixed = True
         for t in range(T):
             if kind != solutionBlock[t][0]:
                 mixed = False
-            if solutionBlock[t][1] > 0.01 and solutionBlock[t][1] < 0.99:
-                rangedContinuous = True
+            if solutionBlock[t][1] != None:
+                if solutionBlock[t][1] > 0.01 and solutionBlock[t][1] < 0.99:
+                    rangedContinuous = True
+            if not solutionBlock[t][2]:
+                fixed = False
         if kind == GRB.CONTINUOUS:
             kind = "C"
         elif kind == GRB.INTEGER:
@@ -103,7 +107,8 @@ class Solution:
         else:
             kind = "B"
         rangedContinuous = "1" if rangedContinuous else "0"
-        return f'[{kind},{rangedContinuous}]'
+        fixed = "1" if fixed else "0"
+        return f'[{kind},{rangedContinuous},{fixed}]'
 
     def __str__(self):
         output = f"===== {MEMBER_OF_SOLUTION} =====\nInfos:\n"

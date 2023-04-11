@@ -2,6 +2,9 @@ import datetime
 import logging
 from typing import List, Dict
 
+CHRONOS_START_MESSAGE = ">>>>>"
+CHRONOS_END_MESSAGE = "<<<<<<<<<<<<<<<"
+
 CHRONOS = "CHRONOS"
 INICIALIZATION = "INICIALIZATION"
 FINISHED = "FINISHED"
@@ -62,15 +65,15 @@ class Chronos:
         self.printObj(message = INICIALIZATION, object = self)
 
     def printObj(self, message: str, object: object):
-        logging.info(msg = f"\n>>>>> OBJ | {self.origin} | {datetime.datetime.now()} | {message}\n")
+        logging.info(msg = f"\n{CHRONOS_START_MESSAGE} OBJ | {self.origin} | {datetime.datetime.now()} | {message}\n")
         logging.info(msg = object.__str__())
-        logging.info(msg = "\n<<<<<<<<<<<<<<<\n")
+        logging.info(msg = F"\n{CHRONOS_END_MESSAGE}n")
 
     def printMessage(self, message: str, warning: bool = False):
         if warning:
-            logging.warning(f"\n>>>>> WARNING | {self.origin} | {datetime.datetime.now()}\n\n{message}\n\n<<<<<<<<<<<<<<<\n")
+            logging.warning(f"\n{CHRONOS_START_MESSAGE} WARNING | {self.origin} | {datetime.datetime.now()}\n\n{message}\n\n{CHRONOS_END_MESSAGE}\n")
         else:
-            logging.warning(f"\n>>>>> INFO | {self.origin} | {datetime.datetime.now()}\n\n{message}\n\n<<<<<<<<<<<<<<<\n")
+            logging.warning(f"\n{CHRONOS_START_MESSAGE} INFO | {self.origin} | {datetime.datetime.now()}\n\n{message}\n\n{CHRONOS_END_MESSAGE}\n")
 
     def stillValid(self):
         return (datetime.datetime.now() - self.rootTime).total_seconds() < self.timeLimit
