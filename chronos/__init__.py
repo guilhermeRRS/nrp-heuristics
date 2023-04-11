@@ -1,6 +1,7 @@
 import datetime
 import logging
 from typing import List, Dict
+from ._printers import *
 
 CHRONOS_START_MESSAGE = ">>>>>"
 CHRONOS_END_MESSAGE = "<<<<<<<<<<<<<<<"
@@ -11,9 +12,6 @@ FINISHED = "FINISHED"
 
 CHRONOS_MARK_START = "CHRONOS_MARK_START"
 CHRONOS_MARK_STOP = "CHRONOS_MARK_STOP"
-
-CHRONOS_COUNTER = "CHRONOS_COUNTER"
-CHRONOS_MANAGER = "CHRONOS_MANAGER"
 
 class ChronosCounter:
 
@@ -37,15 +35,8 @@ class ChronosCounter:
         return self.stop - (datetime.datetime.now() - self.start).total_seconds()
 
     def __str__(self):
-        output = f"===== {CHRONOS_COUNTER} =====:\n"
-        output += f"Name:               {self.name}\n"
-        output += f"Log:                {self.log}\n"
-        output += f"Start:              {self.start}\n"
-        output += f"Stop Condition:     {self.stop if self.stop != None else 'Not set'}\n"
-        output += f"Valid:              {self.stillValid() if self.stop != None else 'Not set'} - {datetime.datetime.now()}\n"
-        output += f"TimeLeft:           {self.timeLeft() if self.stillValid() == True else 0}\n"
-        output += "==============="
-        return output
+       
+        return print_ChronosCounter(self)
 
 class Chronos:
 
@@ -97,16 +88,7 @@ class Chronos:
                 self.printObj(CHRONOS_MARK_STOP, last)
 
     def __str__(self):
-        output = f"===== {CHRONOS_MANAGER} =====\n"
-        output += f"Root time:  {self.rootTime}\n"
-        output += f"Time limit: {self.timeLimit}\n"
-        output += f"Valid:      {self.stillValid()} ({datetime.datetime.now()})\n"
-        output += f"Size:       {len(self.timeMarks)}\n"
-        output += "List:       "
-        for chronosCounter in self.timeMarks:
-            output += f" '{chronosCounter.name}'"
-        output += "\n==============="
-        return output
+        return print_Chronos(self)
             
     def done(self):
         self.printObj(FINISHED, self)

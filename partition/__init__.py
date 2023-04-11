@@ -1,5 +1,5 @@
 from typing import List
-
+from ._printers import *
 from enum import Enum
 
 class PartitionSize(Enum):
@@ -29,7 +29,7 @@ class Partition:
         self.t9 = t9
 
     def __str__(self):
-        return f"Partition: ({self.i0}, {self.i9}), ({self.d0}, {self.d9}), ({self.t0}, {self.t9})\n"
+        return print_Partition(self)
 
 class PartitionHolder:
 

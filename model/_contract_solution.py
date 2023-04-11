@@ -4,8 +4,7 @@ from gurobipy import GRB
 from typing import List, NewType
 import io
 from ._contract_data import Sets
-
-MEMBER_OF_SOLUTION = "MEMBER_OF_SOLUTION"
+from ._printers import *
 
 ThreeDimInt = NewType("ThreeDimInt", List[List[List[int]]]);
 ThreeDimVar = NewType("threeDimVar", List[List[List[gp.Var]]]);
@@ -111,10 +110,4 @@ class Solution:
         return f'[{kind},{rangedContinuous},{fixed}]'
 
     def __str__(self):
-        output = f"===== {MEMBER_OF_SOLUTION} =====\nInfos:\n"
-        output += f"I:      {len(self.solution)}\n"
-        output += f"D:      {len(self.solution[0])}\n"
-        output += f"T:      {len(self.solution[0][0])}\n"
-        output += f"Hash:   {hash(str(self.solution))}\n"
-        output += "==============="
-        return output
+        return print_Solution(self)
