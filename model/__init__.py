@@ -1,13 +1,11 @@
 # coding=utf-8
 from typing import Union
+from ._printers import *
 from ._contract_data import Data
 from ._contract_model import Model
 from ._contract_solution import Solution
 import gurobipy as gp
 from gurobipy import GRB
-
-GUROBI_OPTIMIZE_OUTPUT = "GUROBI_OPTIMIZE_OUTPUT"
-MEMBER_OF_MODEL = "MEMBER_OF_MODEL"
 
 class GurobiOptimizedOutput:
 
@@ -24,17 +22,7 @@ class GurobiOptimizedOutput:
         return not (not (self.status in (GRB.OPTIMAL, GRB.TIME_LIMIT, GRB.SOLUTION_LIMIT)) or self.solCount == 0)
     
     def __str__(self):
-        obj = -1
-        if self.valid():
-            obj = self.m.objVal
-        output =  f"===== {GUROBI_OPTIMIZE_OUTPUT} =====\nInfos:\n"
-        output += f"Status:      {self.status}\n"
-        output += f"SolCount:    {self.solCount}\n"
-        output += f"Valid:       {self.valid()}\n"
-        output += f"Obj:         {obj}\n"
-        output += "==============="
-        return output
-
+        return print_GurobiOptimizedOutput(self)
 
 class NurseModel() :
 
@@ -62,15 +50,7 @@ class NurseModel() :
         self.s_solution = False
 
     def __str__(self):
-        output =  f"===== {MEMBER_OF_MODEL} =====\nInfos:\n"
-        output += f"Is there data:      {self.data != None}\n"
-        output += f"Success data:       {self.s_data}\n"
-        output += f"Is there model?     {self.model != None}\n"
-        output += f"Success model?      {self.s_model}\n"
-        output += f"Is there solution?  {self.solution != None}\n"
-        output += f"Success solution?   {self.s_solution}\n"
-        output += "==============="
-        return output
+        return print_NurseModel(self)
 
     from ._setters import setPathData, setPathModel, setPathSolution, unsetPathData, unsetPathModel, unsetPathSolution
 
