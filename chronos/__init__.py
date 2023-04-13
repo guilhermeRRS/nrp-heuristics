@@ -73,15 +73,15 @@ class Chronos:
         self.printObj(origin = ORIGIN_CHRONOS, message = INICIALIZATION, object = self)
 
     def printObj(self, origin: str, message: str, object: object):
-        logging.info(msg = f"\n{CHRONOS_START_MESSAGE} OBJ | {origin} | {datetime.datetime.now()} | {message}\n")
+        logging.info(msg = f"\n{CHRONOS_START_MESSAGE} OBJ | {origin} | {datetime.datetime.now()} | {message} |\n")
         logging.info(msg = object.__str__())
         logging.info(msg = F"\n{CHRONOS_END_MESSAGE}\n")
 
     def printMessage(self, origin: str, message: str, warning: bool = False):
         if warning:
-            logging.warning(f"\n{CHRONOS_START_MESSAGE} WARNING | {origin} | {datetime.datetime.now()}\n\n{message}\n\n{CHRONOS_END_MESSAGE}\n")
+            logging.warning(f"\n{CHRONOS_START_MESSAGE} WARNING | {origin} | {datetime.datetime.now()} | \n{message}\n{CHRONOS_END_MESSAGE}\n")
         else:
-            logging.warning(f"\n{CHRONOS_START_MESSAGE} INFO | {origin} | {datetime.datetime.now()}\n\n{message}\n\n{CHRONOS_END_MESSAGE}\n")
+            logging.warning(f"\n{CHRONOS_START_MESSAGE} INFO | {origin} | {datetime.datetime.now()} | \n{message}\n{CHRONOS_END_MESSAGE}\n")
 
     def stillValid(self):
         return (datetime.datetime.now() - self.rootTime).total_seconds() < self.timeLimit
