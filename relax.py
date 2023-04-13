@@ -68,7 +68,7 @@ try:
 
 
         if success:
-            chronos.printMessage(ORIGIN_MAIN, SUCCESS_SOLVED, True)
+            chronos.printMessage(ORIGIN_MAIN, SUCCESS_SOLVED)
             if(nurse.solution.printSolution(f"{PATH_SAVE_SOLUTION}{instance}_{description}_{iPartition._name_}_{dPartition._name_}_{flagFast}.sol", nurse.data.sets)):
                 chronos.printMessage(ORIGIN_MAIN, SOLUTION_PRINTING_SUCCESS, False)
             else:
