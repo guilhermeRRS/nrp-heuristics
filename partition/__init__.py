@@ -1,5 +1,5 @@
 from typing import List
-from ._printers import *
+from chronos import *
 from enum import Enum
 
 class PartitionSize(Enum):

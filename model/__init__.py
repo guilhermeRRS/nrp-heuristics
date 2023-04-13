@@ -1,6 +1,6 @@
 # coding=utf-8
 from typing import Union
-from ._printers import *
+from chronos import *
 from ._contract_data import Data
 from ._contract_model import Model
 from ._contract_solution import Solution

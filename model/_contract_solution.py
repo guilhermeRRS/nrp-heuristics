@@ -2,9 +2,9 @@
 import gurobipy as gp
 from gurobipy import GRB
 from typing import List, NewType
+from chronos import *
 import io
 from ._contract_data import Sets
-from ._printers import *
 
 ThreeDimInt = NewType("ThreeDimInt", List[List[List[int]]]);
 ThreeDimVar = NewType("threeDimVar", List[List[List[gp.Var]]]);

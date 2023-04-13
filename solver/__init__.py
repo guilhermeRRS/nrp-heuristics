@@ -4,7 +4,7 @@ from model import NurseModel, Solution, GurobiOptimizedOutput
 import gurobipy as gp
 from gurobipy import GRB
 
-SOLVER = "SOLVER"
+ORIGIN_SOLVER = "ORIGIN_SOLVER"
 START_OPTIMIZE = "START_OPTIMIZE"
 
 SOLVER_GUROBI_OUTPUT = "SOLVER_GUROBI_OUTPUT"
@@ -19,7 +19,6 @@ class Solver:
     def __init__(self, nurseModel: NurseModel, chronos: Chronos):
         self.nurseModel = nurseModel
         self.chronos = chronos
-        self.chronos.origin = SOLVER
 
     def run(self, fast:bool = False):
         m = self.nurseModel.model.m
@@ -37,7 +36,7 @@ class Solver:
 
             gurobiReturn = GurobiOptimizedOutput(m)
 
-            self.chronos.printObj(SOLVER_GUROBI_OUTPUT, gurobiReturn)
+            self.chronos.printObj(ORIGIN_SOLVER, SOLVER_GUROBI_OUTPUT, gurobiReturn)
 
             if gurobiReturn.valid():
 
@@ -46,9 +45,9 @@ class Solver:
                 return True, self.nurseModel
             
             else:
-                self.chronos.printMessage(SOLVER_ITERATION_NO_SOLUTION, False)
+                self.chronos.printMessage(ORIGIN_SOLVER, SOLVER_ITERATION_NO_SOLUTION, False)
             
         else:
-            self.chronos.printMessage(SOLVER_ITERATION_NO_TIME, False)
+            self.chronos.printMessage(ORIGIN_SOLVER, SOLVER_ITERATION_NO_TIME, False)
             
         return False, self.nurseModel

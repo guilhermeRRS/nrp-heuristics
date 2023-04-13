@@ -1,7 +1,4 @@
 # coding=utf-8
-
-FAILED_TO_SOLVE = "FAILED_TO_SOLVE"
-
 import gurobipy as gp
 from gurobipy import GRB
 
@@ -10,7 +7,17 @@ import sys
 from model import NurseModel
 from partition import PartitionSize
 from relax import Relax
-from chronos import Chronos
+from chronos import Chronos, ErrorExpectionObj
+import sys, os
+
+ORIGIN_MAIN = "ORIGIN_MAIN"
+
+FAILED_TO_SOLVE = "FAILED_TO_SOLVE"
+SOLUTION_PRINTING_SUCCESS = "SOLUTION_PRINTING_SUCCESS"
+SOLUTION_PRINTING_FAILED = "SOLUTION_PRINTING_FAILED"
+SUCCESS_SOLVED = "SUCCESS_SOLVED"
+FAILED_TO_SETUP = "FAILED_TO_SETUP"
+UNEXPECTED_FAIL = "UNEXPECTED_FAIL"
 
 cluster = len((sys.argv[1:])) == 6
 
@@ -47,20 +54,36 @@ nurse = NurseModel()
 nurse.setPathData(f"{PATH_DATA}Instance{instance}.txt")
 nurse.setPathModel(f"{PATH_MODEL}modelo{instance}.lp")
 
-nurse.getData()
-nurse.getModel()
-
 chronos = Chronos(timeLimit = timeLimit)
 
-if nurse.s_data and nurse.s_model:
-    
-    relax = Relax(nurseModel = nurse, chronos = chronos, iPartitionSize = iPartition, dPartitionSize = dPartition, pathPartialSols = f"{PATH_SAVE_SOLUTION}{instance}_{description}_{iPartition._name_}_{dPartition._name_}_{flagFast}")
-    success, nurse = relax.run(fast = fast)
+try:
 
-    print(success)
-    if success:
-        print(nurse.solution.printSolution(f"{PATH_SAVE_SOLUTION}{instance}_{description}_{iPartition._name_}_{dPartition._name_}_{flagFast}.sol", nurse.data.sets))
+    nurse.getData()
+    nurse.getModel()
+
+    if nurse.s_data and nurse.s_model:
+        
+        relax = Relax(nurseModel = nurse, chronos = chronos, iPartitionSize = iPartition, dPartitionSize = dPartition, pathPartialSols = f"{PATH_SAVE_SOLUTION}{instance}_{description}_{iPartition._name_}_{dPartition._name_}_{flagFast}")
+        success, nurse = relax.run(fast = fast)
+
+
+        if success:
+            chronos.printMessage(ORIGIN_MAIN, SUCCESS_SOLVED, True)
+            if(nurse.solution.printSolution(f"{PATH_SAVE_SOLUTION}{instance}_{description}_{iPartition._name_}_{dPartition._name_}_{flagFast}.sol", nurse.data.sets)):
+                chronos.printMessage(ORIGIN_MAIN, SOLUTION_PRINTING_SUCCESS, False)
+            else:
+                chronos.printMessage(ORIGIN_MAIN, SOLUTION_PRINTING_FAILED, True)
+        else:
+            chronos.printMessage(ORIGIN_MAIN, FAILED_TO_SOLVE, True)
+        
+        chronos.done()
+
     else:
-        chronos.printMessage(FAILED_TO_SOLVE)
+        chronos.printMessage(ORIGIN_MAIN, FAILED_TO_SETUP, True)
+
+except:
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     
-    print(chronos.done())
+    chronos.printMessage(ORIGIN_MAIN, UNEXPECTED_FAIL, True)
+    chronos.printObj(ORIGIN_MAIN, UNEXPECTED_FAIL, ErrorExpectionObj(type = exc_type, fname = fname, line = exc_tb.tb_lineno))

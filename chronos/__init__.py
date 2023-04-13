@@ -2,16 +2,36 @@ import datetime
 import logging
 from typing import List, Dict
 from ._printers import *
+from ._printers_model import *
+from ._printers_partition import *
 
 CHRONOS_START_MESSAGE = ">>>>>"
 CHRONOS_END_MESSAGE = "<<<<<<<<<<<<<<<"
 
-CHRONOS = "CHRONOS"
+ORIGIN_CHRONOS = "ORIGIN_CHRONOS"
+
 INICIALIZATION = "INICIALIZATION"
 FINISHED = "FINISHED"
 
 CHRONOS_MARK_START = "CHRONOS_MARK_START"
 CHRONOS_MARK_STOP = "CHRONOS_MARK_STOP"
+
+class ErrorExpectionObj:
+
+    type: str
+    fname: str
+    line: str
+
+    def __init__(self, type: BaseException, fname: str, line: int):
+
+        self.type = str(type)
+        self.fname = fname
+        self.line = str(line)
+
+    def __str__(self):
+       
+        return print_ErrorExpectionObj(self)
+
 
 class ChronosCounter:
 
@@ -45,26 +65,23 @@ class Chronos:
     timeLimit: int
     rootTime: datetime.datetime
 
-    origin: str
-
     def __init__ (self, timeLimit: int):
         self.timeMarks = []
         self.timeLimit = timeLimit
-        self.origin = CHRONOS
         self.rootTime = datetime.datetime.now()
 
-        self.printObj(message = INICIALIZATION, object = self)
+        self.printObj(origin = ORIGIN_CHRONOS, message = INICIALIZATION, object = self)
 
-    def printObj(self, message: str, object: object):
-        logging.info(msg = f"\n{CHRONOS_START_MESSAGE} OBJ | {self.origin} | {datetime.datetime.now()} | {message}\n")
+    def printObj(self, origin: str, message: str, object: object):
+        logging.info(msg = f"\n{CHRONOS_START_MESSAGE} OBJ | {origin} | {datetime.datetime.now()} | {message}\n")
         logging.info(msg = object.__str__())
-        logging.info(msg = F"\n{CHRONOS_END_MESSAGE}n")
+        logging.info(msg = F"\n{CHRONOS_END_MESSAGE}\n")
 
-    def printMessage(self, message: str, warning: bool = False):
+    def printMessage(self, origin: str, message: str, warning: bool = False):
         if warning:
-            logging.warning(f"\n{CHRONOS_START_MESSAGE} WARNING | {self.origin} | {datetime.datetime.now()}\n\n{message}\n\n{CHRONOS_END_MESSAGE}\n")
+            logging.warning(f"\n{CHRONOS_START_MESSAGE} WARNING | {origin} | {datetime.datetime.now()}\n\n{message}\n\n{CHRONOS_END_MESSAGE}\n")
         else:
-            logging.warning(f"\n{CHRONOS_START_MESSAGE} INFO | {self.origin} | {datetime.datetime.now()}\n\n{message}\n\n{CHRONOS_END_MESSAGE}\n")
+            logging.warning(f"\n{CHRONOS_START_MESSAGE} INFO | {origin} | {datetime.datetime.now()}\n\n{message}\n\n{CHRONOS_END_MESSAGE}\n")
 
     def stillValid(self):
         return (datetime.datetime.now() - self.rootTime).total_seconds() < self.timeLimit
@@ -79,17 +96,17 @@ class Chronos:
         chronos = ChronosCounter(name = name, log = log, stop = self.timeLeft())
         self.timeMarks.append(chronos)
         if(chronos.log):
-            self.printObj(CHRONOS_MARK_START, chronos)
+            self.printObj(ORIGIN_CHRONOS, CHRONOS_MARK_START, chronos)
 
     def stopCounter(self):
         if(len(self.timeMarks) > 0):
             last = self.timeMarks.pop()
             if(last.log):
-                self.printObj(CHRONOS_MARK_STOP, last)
+                self.printObj(ORIGIN_CHRONOS, CHRONOS_MARK_STOP, last)
 
     def __str__(self):
         return print_Chronos(self)
             
     def done(self):
-        self.printObj(FINISHED, self)
+        self.printObj(ORIGIN_CHRONOS, FINISHED, self)
         return self.__str__()
