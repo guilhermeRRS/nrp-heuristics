@@ -3,7 +3,7 @@ from interface import MipInterface
 from model import GurobiOptimizedOutput, NurseModel, Solution
 from partition import Partition, PartitionHolder, PartitionSize
 
-RELAX = "RELAX"
+ORIGIN_RELAX = "ORIGIN_RELAX"
 
 START_ITERATION = "START_ITERATION"
 SOLVER_GUROBI_OUTPUT = "SOLVER_GUROBI_OUTPUT"
@@ -20,7 +20,6 @@ class Relax(MipInterface):
 
         self.nurseModel = nurseModel
         self.chronos = chronos
-        self.chronos.origin = RELAX
         
         self.partitionHolder = PartitionHolder(nurseModel.I, nurseModel.D, nurseModel.T)
         self.partitionHolder.createPartition(iPartitionSize, dPartitionSize, tPartitionSize)
@@ -43,7 +42,9 @@ class Relax(MipInterface):
             iteration += 1
             success = False
             currentPartition = self.partitionHolder.popPartition()
-            print(currentPartition)
+            
+            self.chronos.printMessage(ORIGIN_RELAX, f"Iteration {currentPartition}")
+
             self.intWindow(partition = currentPartition)
 
             if self.chronos.stillValidRestrict():
@@ -55,7 +56,7 @@ class Relax(MipInterface):
 
                 gurobiReturn = GurobiOptimizedOutput(m)
 
-                self.chronos.printObj(SOLVER_GUROBI_OUTPUT, gurobiReturn)
+                self.chronos.printObj(ORIGIN_RELAX, SOLVER_GUROBI_OUTPUT, gurobiReturn)
 
                 Solution().generatePartialX(gurobiReturn.valid(), self.nurseModel.model.x, self.pathPartialSols+f'.{iteration}.partial', self.nurseModel.data.sets)
 
@@ -65,10 +66,10 @@ class Relax(MipInterface):
                     success = True
                 
                 else:
-                    self.chronos.printMessage(SOLVER_ITERATION_NO_SOLUTION, False)
+                    self.chronos.printMessage(ORIGIN_RELAX, SOLVER_ITERATION_NO_SOLUTION, False)
                 
             else:
-                self.chronos.printMessage(SOLVER_ITERATION_NO_TIME, False)
+                self.chronos.printMessage(ORIGIN_RELAX, SOLVER_ITERATION_NO_TIME, False)
 
         if success and self.partitionHolder.partitionSize() == 0:
 
