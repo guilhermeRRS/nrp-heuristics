@@ -43,7 +43,7 @@ class Relax(MipInterface):
             success = False
             currentPartition = self.partitionHolder.popPartition()
             
-            self.chronos.printMessage(ORIGIN_RELAX, f"Iteration {currentPartition}")
+            self.chronos.printMessage(ORIGIN_RELAX, f"Iteration {iteration}")
 
             self.intWindow(partition = currentPartition)
 
