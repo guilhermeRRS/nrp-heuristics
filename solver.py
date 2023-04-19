@@ -34,8 +34,15 @@ logging.basicConfig(level=logging.DEBUG, filename=f'{PAT_LOG}{instance}_{descrip
 logging.getLogger("gurobipy.gurobipy").disabled = True
 
 nurse = NurseModel()
+
+chronos = Chronos(timeLimit = 7200)
+chronos.startCounter("GET_DATA")
 nurse.setPathData(f"{PATH_DATA}Instance{instance}.txt")
+chronos.stopCounter()
+chronos = Chronos(timeLimit = 7200)
+chronos.startCounter("GET_MODEL")
 nurse.setPathModel(f"{PATH_MODEL}modelo{instance}.lp")
+chronos.stopCounter()
 
 chronos = Chronos(timeLimit = timeLimit)
 

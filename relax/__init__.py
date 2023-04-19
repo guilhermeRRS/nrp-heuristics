@@ -1,7 +1,10 @@
+# coding=utf-8
 from chronos import Chronos
 from interface import MipInterface
 from model import GurobiOptimizedOutput, NurseModel, Solution
 from partition import Partition, PartitionHolder, PartitionSize
+import gurobipy as gp
+from gurobipy import GRB
 
 ORIGIN_RELAX = "ORIGIN_RELAX"
 
@@ -26,11 +29,14 @@ class Relax(MipInterface):
 
         self.pathPartialSols = pathPartialSols
 
-    def run(self, fast:bool = False):
+    def run(self, fast:bool = False, factibilize:bool = False):
         
         success = True
 
         iteration = 0
+
+        donePartitions = []
+        partitionsRollback = 0
 
         m = self.nurseModel.model.m
         
@@ -44,6 +50,9 @@ class Relax(MipInterface):
             currentPartition = self.partitionHolder.popPartition()
             
             self.chronos.printMessage(ORIGIN_RELAX, f"Iteration {iteration}")
+            if factibilize:
+                if partitionsRollback > 0:
+                    self.chronos.printMessage(ORIGIN_RELAX, f"Running rollback number {partitionsRollback}", True)
 
             self.intWindow(partition = currentPartition)
 
@@ -62,11 +71,30 @@ class Relax(MipInterface):
 
                 if gurobiReturn.valid():
 
+                    if partitionsRollback > 0:
+                        self.fixWindows(donePartitions[-1])
+
+                    while(partitionsRollback > 0):
+                        self.fixWindows(donePartitions[-1-partitionsRollback])
+                        partitionsRollback -= 1
+
                     self.fixWindows(currentPartition)
                     success = True
+                    donePartitions.append(currentPartition)
                 
                 else:
-                    self.chronos.printMessage(ORIGIN_RELAX, SOLVER_ITERATION_NO_SOLUTION, False)
+
+                    if factibilize and gurobiReturn.status == GRB.INFEASIBLE:
+                        self.partitionHolder.partitions.insert(0, currentPartition)
+                        self.chronos.printMessage(ORIGIN_RELAX, SOLVER_ITERATION_NO_SOLUTION, False)
+                        if len(donePartitions) - partitionsRollback > 0:
+                            self.chronos.printMessage(ORIGIN_RELAX, f"Asking rollback number {partitionsRollback+1}", True)
+                            self.unfixWindows(donePartitions[-1-partitionsRollback])
+                        partitionsRollback += 1
+                        success = True
+                        
+                    else:
+                        self.chronos.printMessage(ORIGIN_RELAX, SOLVER_ITERATION_NO_SOLUTION, True)
                 
             else:
                 self.chronos.printMessage(ORIGIN_RELAX, SOLVER_ITERATION_NO_TIME, False)
