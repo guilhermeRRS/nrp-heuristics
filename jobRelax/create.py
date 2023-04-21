@@ -5,7 +5,7 @@ descriptionRoot = "relax"
 weeks = [2,2,2,4,4,4,4,4,4,4,4,4,4,6,6,8,8,12,12,26,26,52,52,52]
 nurses = [8,14,20,10,16,18,20,30,36,40,50,60,120,32,45,20,32,22,40,50,100,50,100,150]
 
-for time in [600, 900, 3600]:
+for time in [1800, 43200]:
 	description = f"{descriptionRoot}_{time}"
 
 	for fast in [0, 1]:
