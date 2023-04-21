@@ -34,6 +34,7 @@ class Relax(MipInterface):
         success = True
 
         iteration = 0
+        partition = 0
 
         donePartitions = []
         partitionsRollback = 0
@@ -53,7 +54,13 @@ class Relax(MipInterface):
             if factibilize:
                 if partitionsRollback > 0:
                     self.chronos.printMessage(ORIGIN_RELAX, f"Running rollback number {partitionsRollback}", True)
+                else:
+                    partition += 1
+            else:
+                partition += 1
 
+            self.chronos.printMessage(ORIGIN_RELAX, f"Partition {partition}")
+            
             self.intWindow(partition = currentPartition)
 
             if self.chronos.stillValidRestrict():
@@ -71,24 +78,24 @@ class Relax(MipInterface):
 
                 if gurobiReturn.valid():
 
-                    if partitionsRollback > 0:
-                        self.fixWindows(donePartitions[-1])
-
-                    while(partitionsRollback > 0):
-                        self.fixWindows(donePartitions[-1-partitionsRollback])
-                        partitionsRollback -= 1
-
-                    self.fixWindows(currentPartition)
-                    success = True
                     donePartitions.append(currentPartition)
+
+                    i = partitionsRollback if partitionsRollback < len(donePartitions) else len(donePartitions)
+                    while i >= 0:
+                        self.fixWindows(donePartitions[-1-i])
+                        i -= 1
+
+                    partitionsRollback = 0
+                    
+                    success = True
                 
                 else:
 
                     if factibilize and gurobiReturn.status == GRB.INFEASIBLE:
                         self.partitionHolder.partitions.insert(0, currentPartition)
                         self.chronos.printMessage(ORIGIN_RELAX, SOLVER_ITERATION_NO_SOLUTION, False)
+                        self.chronos.printMessage(ORIGIN_RELAX, f"Asking rollback number {partitionsRollback+1}", True)
                         if len(donePartitions) - partitionsRollback > 0:
-                            self.chronos.printMessage(ORIGIN_RELAX, f"Asking rollback number {partitionsRollback+1}", True)
                             self.unfixWindows(donePartitions[-1-partitionsRollback])
                         partitionsRollback += 1
                         success = True
