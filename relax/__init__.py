@@ -29,7 +29,7 @@ class Relax(MipInterface):
 
         self.pathPartialSols = pathPartialSols
 
-    def run(self, fast:bool = False, factibilize:bool = False):
+    def run(self, timeApproach:int):
         
         success = True
 
@@ -41,21 +41,21 @@ class Relax(MipInterface):
 
         m = self.nurseModel.model.m
         
-        if fast:
+        if timeApproach == 0:
             m.setParam("Solutionlimit", 1)
         
         self.relaxWindow(partition = self.partitionHolder.all())
+        tolerance = 10
+        toleranceCount = tolerance
         while self.partitionHolder.partitionSize() > 0 and success:
             iteration += 1
             success = False
             currentPartition = self.partitionHolder.popPartition()
             
             self.chronos.printMessage(ORIGIN_RELAX, f"Iteration {iteration}")
-            if factibilize:
-                if partitionsRollback > 0:
-                    self.chronos.printMessage(ORIGIN_RELAX, f"Running rollback number {partitionsRollback}", True)
-                else:
-                    partition += 1
+            
+            if partitionsRollback > 0:
+                self.chronos.printMessage(ORIGIN_RELAX, f"Running rollback number {partitionsRollback}", True)
             else:
                 partition += 1
 
@@ -64,7 +64,10 @@ class Relax(MipInterface):
             self.intWindow(partition = currentPartition)
 
             if self.chronos.stillValidRestrict():
-                m.setParam("TimeLimit", self.chronos.timeLeft()/(self.partitionHolder.partitionSize()+1))
+                if timeApproach == 0:
+                    m.setParam("TimeLimit", self.chronos.timeLeft())
+                else:
+                    m.setParam("TimeLimit", self.chronos.timeLeft()/(self.partitionHolder.partitionSize()+1))
             
                 self.chronos.startCounter(START_ITERATION)
                 m.optimize()
@@ -88,17 +91,20 @@ class Relax(MipInterface):
                     partitionsRollback = 0
                     
                     success = True
+                    toleranceCount = tolerance
                 
                 else:
 
-                    if factibilize and gurobiReturn.status == GRB.INFEASIBLE:
+                    if True and toleranceCount > 0:
                         self.partitionHolder.partitions.insert(0, currentPartition)
                         self.chronos.printMessage(ORIGIN_RELAX, SOLVER_ITERATION_NO_SOLUTION, False)
                         self.chronos.printMessage(ORIGIN_RELAX, f"Asking rollback number {partitionsRollback+1}", True)
                         if len(donePartitions) - partitionsRollback > 0:
                             self.unfixWindows(donePartitions[-1-partitionsRollback])
                         partitionsRollback += 1
+
                         success = True
+                        toleranceCount -= 1
                         
                     else:
                         self.chronos.printMessage(ORIGIN_RELAX, SOLVER_ITERATION_NO_SOLUTION, True)
