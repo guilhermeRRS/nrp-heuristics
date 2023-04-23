@@ -19,7 +19,7 @@ SUCCESS_SOLVED = "SUCCESS_SOLVED"
 FAILED_TO_SETUP = "FAILED_TO_SETUP"
 UNEXPECTED_FAIL = "UNEXPECTED_FAIL"
 
-cluster = len((sys.argv[1:])) == 7
+cluster = len((sys.argv[1:])) == 6
 
 PATH_DATA = "instances/dados/" if cluster else "../instancias/"
 PATH_MODEL = "instances/modelos/" if cluster else "../modelos/"
@@ -44,12 +44,11 @@ description = str(((sys.argv[1:])[2]))
 iPartition = partitionToPartition(str(((sys.argv[1:])[3])))
 dPartition = partitionToPartition(str(((sys.argv[1:])[4])))
 
-fast = True if str(((sys.argv[1:])[5])) == "1" else False
-factibilize = True if str(((sys.argv[1:])[6])) == "1" else False
-flagFast = "fast" if fast else "std"
-flagFactibilize = "fact" if factibilize else "infac"
+description = f"{description}_{timeLimit}"
 
-logging.basicConfig(level=logging.DEBUG, filename=f'{PAT_LOG}{instance}_{description}_{iPartition._name_}_{dPartition._name_}_{flagFast}_{flagFactibilize}.log', filemode='w', format='%(message)s')
+timeApproach = int((sys.argv[1:])[5])
+
+logging.basicConfig(level=logging.DEBUG, filename=f'{PAT_LOG}{instance}_{description}_{iPartition._name_}_{dPartition._name_}_{timeApproach}.log', filemode='w', format='%(message)s')
 logging.getLogger("gurobipy.gurobipy").disabled = True
 
 nurse = NurseModel()
@@ -72,13 +71,13 @@ try:
 
     if nurse.s_data and nurse.s_model:
         
-        relax = Relax(nurseModel = nurse, chronos = chronos, iPartitionSize = iPartition, dPartitionSize = dPartition, pathPartialSols = f"{PATH_SAVE_SOLUTION}{instance}_{description}_{iPartition._name_}_{dPartition._name_}_{flagFast}")
-        success, nurse = relax.run(fast = fast, factibilize = factibilize)
+        relax = Relax(nurseModel = nurse, chronos = chronos, iPartitionSize = iPartition, dPartitionSize = dPartition, pathPartialSols = f"{PATH_SAVE_SOLUTION}{instance}_{description}_{iPartition._name_}_{dPartition._name_}_{timeApproach}")
+        success, nurse = relax.run(timeApproach = timeApproach)
 
 
         if success:
             chronos.printMessage(ORIGIN_MAIN, SUCCESS_SOLVED)
-            if(nurse.solution.printSolution(f"{PATH_SAVE_SOLUTION}{instance}_{description}_{iPartition._name_}_{dPartition._name_}_{flagFast}.sol", nurse.data.sets)):
+            if(nurse.solution.printSolution(f"{PATH_SAVE_SOLUTION}{instance}_{description}_{iPartition._name_}_{dPartition._name_}_{timeApproach}.sol", nurse.data.sets)):
                 chronos.printMessage(ORIGIN_MAIN, SOLUTION_PRINTING_SUCCESS, False)
             else:
                 chronos.printMessage(ORIGIN_MAIN, SOLUTION_PRINTING_FAILED, True)

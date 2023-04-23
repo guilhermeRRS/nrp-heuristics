@@ -6,6 +6,15 @@ from partition import Partition, PartitionHolder, PartitionSize
 import gurobipy as gp
 from gurobipy import GRB
 
+'''
+timeApproach
+
+0  | Fast | Free
+1  | Fast | Equal
+2  | Long | Equal
+
+'''
+
 ORIGIN_RELAX = "ORIGIN_RELAX"
 
 START_ITERATION = "START_ITERATION"
@@ -41,7 +50,7 @@ class Relax(MipInterface):
 
         m = self.nurseModel.model.m
         
-        if timeApproach == 0:
+        if timeApproach == 0 or timeApproach == 1:
             m.setParam("Solutionlimit", 1)
         
         self.relaxWindow(partition = self.partitionHolder.all())
