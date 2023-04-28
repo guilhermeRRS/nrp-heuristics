@@ -8,7 +8,7 @@ nurses = [8,14,20,10,16,18,20,30,36,40,50,60,120,32,45,20,32,22,40,50,100,50,100
 for time in [600, 1800, 3600, 43200]:
 	description = f"{descriptionRoot}_{time}"
 
-	for timeApproach in [0, 1]:
+	for timeApproach in [0, 1, 2]:
 		for iPartition in ["ALL", "UNITARY", "COUPLE", "QUARTER", "HALF"]:
 			for dPartition in ["ALL", "UNITARY", "COUPLE", "QUARTER", "HALF"]:
 				if not (iPartition == "ALL" and dPartition == "ALL"):
