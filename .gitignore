@@ -5,4 +5,4 @@
 /o_solutions
 *.sol
 *.log
-*/__pycache_/*
+*/__pycache__/*
