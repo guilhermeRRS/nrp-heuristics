@@ -45,7 +45,7 @@ chronos.stopCounter()
 
 chronos = Chronos(timeLimit = timeLimit)
 
-if True:
+try:
 
     nurse.getData()
     nurse.getModel()
@@ -69,7 +69,7 @@ if True:
     else:
         chronos.printMessage(ORIGIN_MAIN, FAILED_TO_SETUP, True)
 
-if False:
+except:
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     

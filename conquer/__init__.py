@@ -17,7 +17,7 @@ class Conquer(MipInterface):
 
     from ._utils import get_extremeShifts
     from ._heuristicsSetters import setDays, setShifts
-    from ._createModels import create_days_model, create_shift_model
+    from ._createModels import create_days_model, create_clean_days_model, create_shift_model, create_clean_shift_model
 
     chronos: Chronos
 
@@ -27,23 +27,43 @@ class Conquer(MipInterface):
         self.nurseModel = nurseModel
         self.chronos = chronos
 
-    historyOfDaySchedules = []
+    cleanHistoryDayModel = {}
+    cleanHistoryShiftModel = []
 
     def run(self):
         
         success = True
         m = self.nurseModel.model.m
-
-        self.historyOfDaySchedules = []
+        
+        self.chronos.startCounter("CREATE_SHIFT_MODEL")
+        shift_model, sm_x = self.create_clean_shift_model(self.nurseModel.data.sets, self.nurseModel.data.parameters)
+        self.cleanHistoryShiftModel = [shift_model, sm_x]
+        self.chronos.stopCounter()
 
         currentNurse = 0
         tries = 0
         while currentNurse < self.nurseModel.I and self.chronos.stillValidRestrict() and success:
 
-            success, triesNurse = self.generateNurse(currentNurse)
+            characteristics = [self.nurseModel.data.parameters.c_min[currentNurse], self.nurseModel.data.parameters.o_min[currentNurse]]
+            if not (str(characteristics) in self.cleanHistoryDayModel.keys()):
+                self.chronos.startCounter(f"CREATING_DAYS_MODEL {str(characteristics)}")
+                days_model, dm_x, dm_k = self.create_clean_days_model(characteristics[0], characteristics[1], self.nurseModel.data.sets, self.nurseModel.data.parameters)
+                self.cleanHistoryDayModel[str(characteristics)] = [days_model, dm_x, dm_k]
+                self.chronos.stopCounter()
+            characteristics = str(characteristics)
+            
+            self.chronos.startCounter(f"NURSE_GENERATION {currentNurse}")
+            success, constraintsDay, constraintsShift, triesNurse = self.generateNurse(currentNurse, characteristics)
+            self.chronos.stopCounter()
+
+            self.chronos.startCounter("CLEANING_CONSTRAINT")
+            for contraintShift in constraintsShift:
+                self.cleanHistoryShiftModel[0].remove(contraintShift)
+            for constraintDay in constraintsDay:
+                self.cleanHistoryDayModel[characteristics][0].remove(constraintDay)
+            self.chronos.stopCounter()
             currentNurse += 1
             tries += triesNurse
-        input(tries)
             
         if self.chronos.stillValidRestrict() and success:
             
@@ -53,6 +73,7 @@ class Conquer(MipInterface):
             m.optimize()
 
             gurobiReturn = GurobiOptimizedOutput(m)
+            self.chronos.printObj("ORIGIN_CONQUER", "SOLVER_GUROBI_OUTPUT", gurobiReturn)
 
             if gurobiReturn.valid() and currentNurse == self.nurseModel.I:
 
@@ -62,18 +83,20 @@ class Conquer(MipInterface):
 
         return False, self.nurseModel
         
-    def generateNurse(self, currentNurse):
+    def generateNurse(self, currentNurse, characteristics):
 
-        solution = []
         success = False
-        print(currentNurse)
         shortestShiftSize, longestShiftSize = self.get_extremeShifts(currentNurse)
 
-        days_model, dm_x = self.create_days_model(currentNurse, self.nurseModel.data.sets, self.nurseModel.data.parameters)
+        self.chronos.startCounter("CONFIG_DAY_MODEL")
+        constraintsDay, days_model, dm_x = self.create_days_model(self.cleanHistoryDayModel[characteristics][0], self.cleanHistoryDayModel[characteristics][1], self.cleanHistoryDayModel[characteristics][2], currentNurse, self.nurseModel.data.sets, self.nurseModel.data.parameters)
+        self.chronos.stopCounter()
         days_model.setParam('Solutionlimit', 1)
         days_model.setParam('OutputFlag', 0)
 
-        shift_model, sm_x = self.create_shift_model(currentNurse, self.nurseModel.data.sets, self.nurseModel.data.parameters)
+        self.chronos.startCounter("CONFIG_SHIFT_MODEL")
+        constraintsShift, shift_model, sm_x = self.create_shift_model(self.cleanHistoryShiftModel[0], self.cleanHistoryShiftModel[1], currentNurse, self.nurseModel.data.sets, self.nurseModel.data.parameters)
+        self.chronos.stopCounter()
         shift_model.setParam('Solutionlimit', 1)
         shift_model.setParam('OutputFlag', 0)
         
@@ -90,11 +113,15 @@ class Conquer(MipInterface):
         while self.chronos.stillValidRestrict() and not success:
             tries += 1
             days_model.setParam("Timelimit", self.chronos.timeLeft())
+            self.chronos.startCounter("SET_DAYS")
             numberOfDays = self.setDays(days_model, dm_x, minimumNumberOfDays, maximumNumberOfDays)
+            self.chronos.stopCounter()
             
             if numberOfDays > -1 and self.chronos.stillValidRestrict():
                 days_model.setParam("Timelimit", self.chronos.timeLeft())
+                self.chronos.startCounter("SET_SHIFTS")
                 numberOfHours = self.setShifts(shift_model, sm_x, dm_x)
+                self.chronos.stopCounter()
 				
                 if numberOfHours > -1:
                     success = True
@@ -113,5 +140,5 @@ class Conquer(MipInterface):
             else:
                 minimumNumberOfDays = max(zero_minimumNumberOfDays, minimumNumberOfDays-1)
                 maximumNumberOfDays = min(zero_maximumNumberOfDays, maximumNumberOfDays+1)
-        print(tries)
-        return success, tries
+        
+        return success, constraintsDay, constraintsShift, tries
