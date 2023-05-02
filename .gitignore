@@ -1,5 +1,6 @@
 /jobSolver*
 /jobRelax
+/jobConquer
 /o_logs
 /o_solutions
 *.sol
