@@ -56,6 +56,7 @@ class Hybrid:
     helperVariables: HelperVariables
 
     from .moves._singleInWorkFlow import move_singleInWorkflow, math_singleInWorkflow, apply_singleInWorkflow, const_singleInWorkflow
+    from .moves._manyInWorkFlow import math_manyInWorkflow, apply_manyInWorkflow
     from ._utils import generateFromSolution, shiftFreeMark, shiftFreeUnMark
 
     def __init__(self, nurseModel: NurseModel, chronos: Chronos):
@@ -73,7 +74,7 @@ class Hybrid:
             dayShiftPenalty += (numberNurses - neededNurses)*self.nurseModel.data.parameters.w_max[day][shift]
         return dayShiftPenalty
 
-    def runNeighbourhoods(self):
+    def run_singleInWorkflow(self):
         nurse = random.randint(0, self.nurseModel.I-1)
         day = random.randint(0, self.nurseModel.D-1)
         s, oldShift, newShift = self.move_singleInWorkflow(nurse, day)
@@ -85,6 +86,60 @@ class Hybrid:
                 print(tp)
                 self.currentObj = tp
                 self.apply_singleInWorkflow(nurse, day, oldShift, newShift, pc, dc, tp)
+                return True
+        return False
+
+    def run_manyInWorkflow(self, howMany):
+        nurses = []
+        day = random.randint(0, self.nurseModel.D-1)
+        countTriesNurse = 0
+
+        nursesOldShifts = []
+        nursesNewShifts = []
+
+        for i in range(howMany):
+            countTriesNurse += 1
+            nurse = random.randint(0, self.nurseModel.I-1)
+            if nurse not in nurses:
+                s, oldShift, newShift = self.move_singleInWorkflow(nurse, day)
+                if s:
+                    nurses.append(nurse)
+                    nursesOldShifts.append(oldShift)
+                    nursesNewShifts.append(newShift)
+
+            if countTriesNurse > 100:
+                break
+              
+        if len(nurses) == howMany:
+            pc, dc, tp = self.math_manyInWorkflow(nurses, day, nursesOldShifts, nursesNewShifts)
+            #print(pc, dc, tp)
+            #input()
+            #print("SINGLE NEW -> ", nurse, day, "|", newShift)
+            if self.currentObj > tp:
+                print(tp)
+                self.currentObj = tp
+                self.apply_manyInWorkflow(nurses, day, nursesOldShifts, nursesNewShifts, pc, dc, tp)
+                return True
+        return False
+
+    
+
+    def runNeighbourhoods(self):
+        singleInWorkflow = 0
+        while self.chronos.stillValidRestrict() and singleInWorkflow < 1000:
+            if self.run_singleInWorkflow():
+                singleInWorkflow = 0
+            else:
+                singleInWorkflow += 1
+        
+        for howMany in range(2, 9):
+            print("!!!!!!!!!!!!!!!!!!!")
+            manyInWorkflow = 0
+            while self.chronos.stillValidRestrict() and manyInWorkflow < howMany*10000:
+                if self.run_manyInWorkflow(howMany):
+                    manyInWorkflow = 0
+                else:
+                    manyInWorkflow += 1
 
 
     def run(self, startObj):
@@ -98,6 +153,7 @@ class Hybrid:
         while self.chronos.stillValidRestrict():
 
             self.runNeighbourhoods()
+            break
 
 
 
@@ -107,7 +163,7 @@ class Hybrid:
         ########## THE TIME COST MAY BE REALY SMALL, SO IT IS FIXED A HUGE TIMELIMIT FOR THE SOLVER
 
         ########################################
-
+        print(self.penalties.total)
         m.setParam("TimeLimit", 43200)
         
         self.chronos.startCounter("START_OPTIMIZE_LAST")
