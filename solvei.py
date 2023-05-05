@@ -5,7 +5,7 @@ from gurobipy import GRB
 import logging
 import sys
 from model import NurseModel
-from hybrid import Hybrid
+from solvei import Solvei
 from chronos import Chronos, ErrorExpectionObj
 import sys, os
 
@@ -21,7 +21,6 @@ UNEXPECTED_FAIL = "UNEXPECTED_FAIL"
 cluster = len((sys.argv[1:])) == 3
 
 bestTimes = [0.075, 0.121, 0.207, 0.146, 0.256, 0.334, 0.344, 0.56, 0.645, 0.847, 1.245, 0.199, 8.528, 1.199, 1.741, 0.655, 1.175, 1.122, 2.554, 8.055, 16.07, 20.81, 93.818, 300.149]
-objs = [1733,3695,6224,6948,8583,10739,12343,20660,16631,24489,32164,55234,103182,25916,51909,21424,38522,35089,63766,213777,420432,539844,937751,1480537]
 
 PATH_DATA = "instances/dados/" if cluster else "../instancias/"
 PATH_MODEL = "instances/modelos/" if cluster else "../modelos/"
@@ -44,15 +43,15 @@ nurse.setPathSolution(f"{PATH_INITIAL}{instance}.sol")
 
 chronos = Chronos(timeLimit = (timeLimit - bestTimes[int(instance)-1]))
 
-if True:
+try:
 
     nurse.getData()
     nurse.getModel()
     nurse.getSolution()
 
     if nurse.s_data and nurse.s_model and nurse.s_solution:
-        hybrid = Hybrid(nurseModel = nurse, chronos = chronos)
-        success, nurse = hybrid.run(objs[int(instance)-1])
+        hybrid = Solvei(nurseModel = nurse, chronos = chronos)
+        success, nurse = hybrid.run()
 
         if success:
             chronos.printMessage(ORIGIN_MAIN, SUCCESS_SOLVED)
@@ -68,7 +67,7 @@ if True:
     else:
         chronos.printMessage(ORIGIN_MAIN, FAILED_TO_SETUP, True)
 
-else:
+except:
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     
