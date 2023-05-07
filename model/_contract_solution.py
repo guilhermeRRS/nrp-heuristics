@@ -60,6 +60,22 @@ class Solution:
                     
         return self.loadSolution(solution)
     
+    def getFromLb(self, x: ThreeDimVar):
+        solution = []
+        I = len(x)
+        D = len(x[0])
+        T = len(x[0][0])
+        for i in range(I):
+            solution.append([])
+            for d in range(D):
+                solution[-1].append([])
+                for t in range(T):
+                    solution[-1][-1].append(0 if x[i][d][t].lb < 0.5 else 1)
+                    if x[i][d][t].lb != x[i][d][t].ub:
+                        raise Exception("Can't produce solution of not fixed sol")
+                    
+        return self.loadSolution(solution)
+    
     def generatePartialX(self, success: bool, x: ThreeDimVar, path: str, sets: Sets):
         solution = []
         I = len(x)
