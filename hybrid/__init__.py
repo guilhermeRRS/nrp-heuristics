@@ -34,7 +34,8 @@ class HelperVariables:
     weekendCounter: TwoDimInt #yes, this is the same as K variable
     projectedX: TwoDimInt
 
-    parallelR_t: Dict[int, Dict[int, OneDimInt]]
+    oneInnerJourney_rt: Dict[int, Dict[int, OneDimInt]]
+    twoInnerJourney_rt: Dict[int, Dict[int, TwoDimInt]]
 
     def __str__(self):
         output = "========================\n"
@@ -55,9 +56,10 @@ class Hybrid:
     chronos: Chronos
     helperVariables: HelperVariables
 
-    from .moves._singleInWorkFlow import move_singleInWorkflow, math_singleInWorkflow, apply_singleInWorkflow, const_singleInWorkflow
-    from .moves._manyInWorkFlow import math_manyInWorkflow, apply_manyInWorkflow
-    from ._utils import generateFromSolution, shiftFreeMark, shiftFreeUnMark
+    from ._utils import generateFromSolution, computeLt, shiftFreeMark, shiftFreeUnMark
+    from ._runners import run_nurseSingle_daySingle_mustWork
+
+    from ._changesContract import SingleChange
 
     def __init__(self, nurseModel: NurseModel, chronos: Chronos):
         self.nurseModel = nurseModel
@@ -74,74 +76,18 @@ class Hybrid:
             dayShiftPenalty += (numberNurses - neededNurses)*self.nurseModel.data.parameters.w_max[day][shift]
         return dayShiftPenalty
 
-    def run_singleInWorkflow(self):
-        nurse = random.randint(0, self.nurseModel.I-1)
-        day = random.randint(0, self.nurseModel.D-1)
-        s, oldShift, newShift = self.move_singleInWorkflow(nurse, day)
-        if s:
-            pc, dc, tp = self.math_singleInWorkflow(nurse, day, oldShift, newShift)
-            #print(pc, dc, tp)
-            #print("SINGLE NEW -> ", nurse, day, "|", newShift)
-            if self.currentObj > tp:
-                print(tp)
-                self.currentObj = tp
-                self.apply_singleInWorkflow(nurse, day, oldShift, newShift, pc, dc, tp)
-                return True
-        return False
-
-    def run_manyInWorkflow(self, howMany):
-        nurses = []
-        day = random.randint(0, self.nurseModel.D-1)
-        countTriesNurse = 0
-
-        nursesOldShifts = []
-        nursesNewShifts = []
-
-        for i in range(howMany):
-            countTriesNurse += 1
-            nurse = random.randint(0, self.nurseModel.I-1)
-            if nurse not in nurses:
-                s, oldShift, newShift = self.move_singleInWorkflow(nurse, day)
-                if s:
-                    nurses.append(nurse)
-                    nursesOldShifts.append(oldShift)
-                    nursesNewShifts.append(newShift)
-
-            if countTriesNurse > 100:
-                break
-              
-        if len(nurses) == howMany:
-            pc, dc, tp = self.math_manyInWorkflow(nurses, day, nursesOldShifts, nursesNewShifts)
-            #print(pc, dc, tp)
-            #input()
-            #print("SINGLE NEW -> ", nurse, day, "|", newShift)
-            if self.currentObj > tp:
-                print(tp)
-                self.currentObj = tp
-                self.apply_manyInWorkflow(nurses, day, nursesOldShifts, nursesNewShifts, pc, dc, tp)
-                return True
-        return False
-
     
-
     def runNeighbourhoods(self):
-        singleInWorkflow = 0
-        while self.chronos.stillValidRestrict() and singleInWorkflow < 1000:
-            if self.run_singleInWorkflow():
-                singleInWorkflow = 0
+        counter = 0
+        while self.chronos.stillValidRestrict() and counter < 3:
+            s, change = self.run_nurseSingle_daySingle_mustWork(anyObj = False, allowEqual = False)
+            if s:
+                self.currentObj = change.obj
+                change.apply()
             else:
-                singleInWorkflow += 1
+                counter += 1
+                
         
-        for howMany in range(2, 9):
-            print("!!!!!!!!!!!!!!!!!!!")
-            manyInWorkflow = 0
-            while self.chronos.stillValidRestrict() and manyInWorkflow < howMany*10000:
-                if self.run_manyInWorkflow(howMany):
-                    manyInWorkflow = 0
-                else:
-                    manyInWorkflow += 1
-
-
     def run(self, startObj):
         m = self.nurseModel.model.m
         self.startObj = startObj
@@ -154,8 +100,6 @@ class Hybrid:
 
             self.runNeighbourhoods()
             break
-
-
 
         ########################################
 
@@ -181,6 +125,8 @@ class Hybrid:
             return True, self.nurseModel
         
         else:
+            self.nurseModel.solution = Solution().getFromLb(self.nurseModel.model.x)
+            self.nurseModel.solution.printSolution("failed.sol", self.nurseModel.data.sets)
             self.chronos.printMessage(ORIGIN_SOLVER, SOLVER_ITERATION_NO_SOLUTION, False)
             
         self.chronos.printMessage(ORIGIN_SOLVER, "NOT_ABLE_TO_SAVE", True)
