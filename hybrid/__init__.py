@@ -22,6 +22,7 @@ ThreeDimVar = NewType("threeDimVar", List[List[List[gp.Var]]])
 class penalties:
 
     numberNurses: TwoDimInt
+    worstDays: OneDimInt
     demand: int
     preference_total: int
 
@@ -46,11 +47,10 @@ class Hybrid:
     from ._utils import generateFromSolution, computeLt, shiftFreeMark, shiftFreeUnMark, getOptions, evaluateFO
 
     from .rules._forSingle import const_single, math_single, math_single_demand, math_single_preference
-    #from .rules._forManyNurseSingleDay import math_manyNurses_singleDay, math_manyNurses_singleDay_demand, math_manyNurses_singleDay_preference
-
-    from .runs._run_single import run_single, testAndGet_single_fixed
-    #from .runs._run_manyNurses_singleDay import run_manyNurses_singleDay
-
+    
+    from .runs._run_single import run_single, const2_verify
+    from .runs._run_focusWorseDays import run_focusWorseDays
+    
     from .commits._commit_single import commit_single
 
     
@@ -62,14 +62,22 @@ class Hybrid:
 
     def runNeighbourhoods(self):
         numberFail = 0
-        limitRuns = 10000
+        limitRuns = 1000
+        nOfSmoves = 0
+        
         for i in range(limitRuns):
-            s, move = self.run_single(worse = False, better = True, equal = True)
+            s, move = self.run_single(worse = False, better = True, equal = False)
             if s:
                 print(move)
                 self.commit_single(move)
+                nOfSmoves += 1
             else:
                 numberFail += 1
+            
+            if nOfSmoves == 10:
+                break
+        
+        #self.run_focusWorseDays()
         print("output", limitRuns - numberFail, numberFail, limitRuns)
        
     def run(self, startObj):
@@ -78,9 +86,9 @@ class Hybrid:
         self.currentObj = startObj
         self.chronos.startCounter("START_SETTING_START")
         self.generateFromSolution()
+        input(self.penalties.total)
         self.chronos.stopCounter()
         print("Start working")
-
         while self.chronos.stillValidRestrict():
 
             self.runNeighbourhoods()
@@ -92,7 +100,7 @@ class Hybrid:
         ########## THE TIME COST MAY BE REALY SMALL, SO IT IS FIXED A HUGE TIMELIMIT FOR THE SOLVER
 
         ########################################
-        print(self.penalties.total)
+        print("-->",self.penalties.total)
         m.setParam("TimeLimit", 43200)
         
         self.chronos.startCounter("START_OPTIMIZE_LAST")

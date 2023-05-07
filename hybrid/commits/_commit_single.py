@@ -1,9 +1,20 @@
-def commit_single(self, move):
+def commit_single(self, move, useDelta:bool = True):
     nurse = move["n"]
     day = move["d"]
     oldShift = self.helperVariables.projectedX[nurse][day]
     newShift = move["s"]
 
+    if not useDelta:
+        raise Exception("Not implemented feature")
+
+    self.penalties.demand = self.math_single_demand(day, oldShift, newShift)
+    self.penalties.preference_total = self.math_single_preference(nurse, day, oldShift, newShift)
+
+    self.penalties.total = self.penalties.demand + self.penalties.preference_total
+
+    self.penalties.worstDaysShifts[day][oldShift] += self.dayDeltaPenaltyOld
+    self.penalties.worstDaysShifts[day][newShift] += self.dayDeltaPenaltyNew
+    self.penalties.worstDays[day] += self.dayDeltaPenaltyNew + self.dayDeltaPenaltyOld
     
     self.nurseModel.model.x[nurse][day][oldShift].lb = 0
     self.nurseModel.model.x[nurse][day][oldShift].ub = 0
@@ -19,8 +30,3 @@ def commit_single(self, move):
 
     self.penalties.numberNurses[day][oldShift] -= 1
     self.penalties.numberNurses[day][newShift] += 1
-
-    self.penalties.demand = self.math_single_demand(day, oldShift, newShift)
-    self.penalties.preference_total = self.math_single_preference(nurse, day, oldShift, newShift)
-
-    self.penalties.total = self.penalties.demand + self.penalties.preference_total
