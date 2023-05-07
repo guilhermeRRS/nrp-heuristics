@@ -37,57 +37,41 @@ class HelperVariables:
     oneInnerJourney_rt: Dict[int, Dict[int, OneDimInt]]
     twoInnerJourney_rt: Dict[int, Dict[int, TwoDimInt]]
 
-    def __str__(self):
-        output = "========================\n"
-
-        output += "shiftTypeCounter: " + str(self.shiftTypeCounter) + "\n"
-        output += "workloadCounter: " + str(self.workloadCounter) + "\n"
-        output += "weekendCounter: " + str(self.weekendCounter) + "\n"
-        output += "projectedX: " + str(self.projectedX) + "\n"
-
-        output += "========================"
-
-        return output
-
-
 class Hybrid:
 
     nurseModel: NurseModel
     chronos: Chronos
     helperVariables: HelperVariables
 
-    from ._utils import generateFromSolution, computeLt, shiftFreeMark, shiftFreeUnMark
-    from ._runners import run_nurseSingle_daySingle_mustWork
+    from ._utils import generateFromSolution, computeLt, shiftFreeMark, shiftFreeUnMark, getOptions, evaluateFO
 
-    from ._changesContract import SingleChange
+    from .rules._forSingle import const_single, math_single, math_single_demand, math_single_preference
+    #from .rules._forManyNurseSingleDay import math_manyNurses_singleDay, math_manyNurses_singleDay_demand, math_manyNurses_singleDay_preference
 
+    from .runs._run_single import run_single, testAndGet_single_fixed
+    #from .runs._run_manyNurses_singleDay import run_manyNurses_singleDay
+
+    from .commits._commit_single import commit_single
+
+    
     def __init__(self, nurseModel: NurseModel, chronos: Chronos):
         self.nurseModel = nurseModel
         self.chronos = chronos
         self.helperVariables = HelperVariables()
         self.penalties = penalties()
 
-    def singularDemand(self, day, shift, numberNurses):
-        neededNurses = self.nurseModel.data.parameters.u[day][shift]
-        dayShiftPenalty = 0
-        if numberNurses < neededNurses:
-            dayShiftPenalty += (neededNurses - numberNurses)*self.nurseModel.data.parameters.w_min[day][shift]
-        elif numberNurses > neededNurses:
-            dayShiftPenalty += (numberNurses - neededNurses)*self.nurseModel.data.parameters.w_max[day][shift]
-        return dayShiftPenalty
-
-    
     def runNeighbourhoods(self):
-        counter = 0
-        while self.chronos.stillValidRestrict() and counter < 3:
-            s, change = self.run_nurseSingle_daySingle_mustWork(anyObj = False, allowEqual = False)
+        numberFail = 0
+        limitRuns = 10000
+        for i in range(limitRuns):
+            s, move = self.run_single(worse = False, better = True, equal = True)
             if s:
-                self.currentObj = change.obj
-                change.apply()
+                print(move)
+                self.commit_single(move)
             else:
-                counter += 1
-                
-        
+                numberFail += 1
+        print("output", limitRuns - numberFail, numberFail, limitRuns)
+       
     def run(self, startObj):
         m = self.nurseModel.model.m
         self.startObj = startObj
@@ -96,6 +80,7 @@ class Hybrid:
         self.generateFromSolution()
         self.chronos.stopCounter()
         print("Start working")
+
         while self.chronos.stillValidRestrict():
 
             self.runNeighbourhoods()
@@ -121,6 +106,8 @@ class Hybrid:
         if gurobiReturn.valid():
 
             self.nurseModel.solution = Solution().getFromX(self.nurseModel.model.x)
+            self.nurseModel.solution = Solution().getFromLb(self.nurseModel.model.x)
+            self.nurseModel.solution.printSolution("failed.sol", self.nurseModel.data.sets)
             self.nurseModel.s_solution = True
             return True, self.nurseModel
         

@@ -70,9 +70,9 @@ class Solution:
             for d in range(D):
                 solution[-1].append([])
                 for t in range(T):
-                    solution[-1][-1].append(0 if x[i][d][t].lb < 0.5 else 1)
                     if x[i][d][t].lb != x[i][d][t].ub:
                         raise Exception("Can't produce solution of not fixed sol")
+                    solution[-1][-1].append(0 if x[i][d][t].lb < 0.5 else 1)
                     
         return self.loadSolution(solution)
     

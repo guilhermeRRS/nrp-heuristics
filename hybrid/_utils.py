@@ -3,7 +3,6 @@ import itertools
 def computeLt(self, sequence):
     return sum([self.nurseModel.data.parameters.l_t[i] for i in range(len(sequence))])
 
-
 def generateFromSolution(self):
     print("Generating")
     self.helperVariables.shiftTypeCounter = []
@@ -40,7 +39,7 @@ def generateFromSolution(self):
                 self.nurseModel.model.x[i][d][t].lb = self.nurseModel.solution.solution[i][d][t]
 
                 if self.nurseModel.solution.solution[i][d][t] >= 0.5:
-                    self.helperVariables.shiftTypeCounter[-1][-1] += 1
+                    self.helperVariables.shiftTypeCounter[-1][t] += 1
                     self.helperVariables.workloadCounter[-1] += self.nurseModel.data.parameters.l_t[t]
                     self.helperVariables.projectedX[-1][d] = t
                     self.helperVariables.workingDays[-1].append(d)
@@ -279,3 +278,13 @@ def verifyMaxShifts(self, nurse, olds, news):
             return False
 
     return True
+
+def evaluateFO(self, oldObj, newObj, worse:bool = False, better:bool = True, equal:bool = False):
+
+    if better and oldObj > newObj:
+        return True
+    if worse and oldObj < newObj:
+        return True
+    if equal and oldObj == newObj:
+        return True
+    return False
