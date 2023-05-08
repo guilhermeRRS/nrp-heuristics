@@ -46,12 +46,16 @@ class Hybrid:
 
     from ._utils import generateFromSolution, computeLt, shiftFreeMark, shiftFreeUnMark, getOptions, evaluateFO
 
-    from .rules._forSingle import const_single, math_single, math_single_demand, math_single_preference
+    from .rules._forSingle import const_single, math_single, math_single_demand, math_single_preference, math_single_demandDelta, math_single_preferenceDelta
+    from .rules._forSequence import const_sequence, math_sequence
     
     from .runs._run_single import run_single, const2_verify
-    from .runs._run_focusWorseDays import run_focusWorseDays
+    from .runs._run_sequence import run_sequence, getSequenceWorkMarks, getOptions, run_sequence_fixed
+    from .runs._run_sequenceMany import run_sequenceMany
+    #from .runs._run_focusWorseDays import run_focusWorseDays
     
     from .commits._commit_single import commit_single
+    from .commits._commit_sequence import commit_sequence
 
     
     def __init__(self, nurseModel: NurseModel, chronos: Chronos):
@@ -62,19 +66,23 @@ class Hybrid:
 
     def runNeighbourhoods(self):
         numberFail = 0
-        limitRuns = 1000
+        limitRuns = 2000
         nOfSmoves = 0
         
         for i in range(limitRuns):
-            s, move = self.run_single(worse = False, better = True, equal = False)
+            if i % 1000 == 0:
+                print("===============")
+            s, move = self.run_sequenceMany(numberOfNurses = 2, worse = False, better = True, equal = False)
             if s:
+                raise Exception("Not implemented")
                 print(move)
-                self.commit_single(move)
+                #print(self.helperVariables.projectedX[move["n"]][move["d"]:(move["d"]+len(move["s"]))])
+                self.commit_sequence(move)
                 nOfSmoves += 1
             else:
                 numberFail += 1
             
-            if nOfSmoves == 10:
+            if nOfSmoves == 10000:
                 break
         
         #self.run_focusWorseDays()

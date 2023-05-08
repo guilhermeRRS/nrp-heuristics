@@ -1,7 +1,7 @@
 import itertools
 
 def computeLt(self, sequence):
-    return sum([self.nurseModel.data.parameters.l_t[i] for i in range(len(sequence))])
+    return sum([self.nurseModel.data.parameters.l_t[sequence[i]] for i in range(len(sequence))])
 
 def generateFromSolution(self):
     print("Generating")
@@ -134,7 +134,7 @@ def generateFromSolution(self):
             freeFirst = [tStart]
             freeAfter = [tEnd]
             self.helperVariables.oneInnerJourney_rt["free"][tEnd].append({"s": freeFirst, "w": self.computeLt(freeFirst)})
-            self.helperVariables.oneInnerJourney_rt[tStart]["free"].append({"s": freeAfter, "w": self.computeLt(freeFirst)})
+            self.helperVariables.oneInnerJourney_rt[tStart]["free"].append({"s": freeAfter, "w": self.computeLt(freeAfter)})
 
             self.helperVariables.twoInnerJourney_rt["free"]["free"].append({"s": newSequence, "w": self.computeLt(newSequence)})
     
