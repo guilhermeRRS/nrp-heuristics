@@ -1,7 +1,8 @@
 # coding=utf-8
 import gurobipy as gp
 from gurobipy import GRB
-
+import random
+random.seed(0)
 import logging
 import sys
 from model import NurseModel

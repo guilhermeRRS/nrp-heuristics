@@ -15,19 +15,22 @@ def const_single(self, nurse, oldShift, newShift):
     
     return True
 
-def math_single_preference(self, nurse, day, oldShift, newShift):
-
-    penalty = self.penalties.preference_total
+def math_single_preferenceDelta(self, nurse, day, oldShift, newShift):
 
     q = self.nurseModel.data.parameters.q[nurse][day]
     p = self.nurseModel.data.parameters.p[nurse][day]
 
-    penalty -= (p[oldShift] - q[oldShift])
-    penalty += (p[newShift] - q[newShift])
+    return (q[oldShift] - p[oldShift]) + (p[newShift] - q[newShift])
 
-    return penalty
+def math_single_preference(self, nurse, day, oldShift, newShift):
+    return self.penalties.preference_total + self.math_single_preferenceDelta(nurse, day, oldShift, newShift)
 
-def math_single_demand(self, day, oldShift, newShift):
+def math_single_demandDelta(self, day, oldShift, newShift):
+
+    if oldShift == newShift:
+        self.dayDeltaPenaltyOld = 0 
+        self.dayDeltaPenaltyNew = 0 
+        return 0
 
     penaltyOld = 0
     penaltyNew = 0
@@ -60,7 +63,11 @@ def math_single_demand(self, day, oldShift, newShift):
     self.dayDeltaPenaltyOld = penaltyOld 
     self.dayDeltaPenaltyNew = penaltyNew 
 
-    return self.penalties.demand + penaltyOld + penaltyNew
+    return penaltyOld + penaltyNew
+
+def math_single_demand(self, day, oldShift, newShift):
+
+    return self.penalties.demand + self.math_single_demandDelta(day, oldShift, newShift)
 
 
 def math_single(self, nurse, day, oldShift, newShift):
