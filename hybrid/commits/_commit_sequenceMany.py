@@ -1,7 +1,7 @@
 def commit_sequenceMany(self, move):
     newShifts = move["s"]
 
-    
+    #####here, needs to calculate
 
     self.penalties.demand = self.math_single_demand(day, oldShift, newShift)
     self.penalties.preference_total = self.math_single_preference(nurse, day, oldShift, newShift)
