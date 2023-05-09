@@ -109,6 +109,7 @@ def generateFromSolution(self):
 
     print("The monster")
     highest_cmax = max(self.nurseModel.data.parameters.c_max)
+    self.highest_cmax = highest_cmax
 
     sizedTwoStarting = {}
     sizedThreeStarting = {}
