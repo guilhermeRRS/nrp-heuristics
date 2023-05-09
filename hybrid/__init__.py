@@ -47,7 +47,7 @@ class Hybrid:
     from ._utils import generateFromSolution, computeLt, shiftFreeMark, shiftFreeUnMark, getOptions, evaluateFO
 
     from .rules._forSingle import const_single, math_single, math_single_demand, math_single_preference, math_single_demandDelta, math_single_preferenceDelta
-    from .rules._forSequence import const_sequence, math_sequence
+    from .rules._forSequence import const_sequence, math_sequence, math_manyNurses_daySequence, math_demandSingleShift_manyNurses_daySequence
     
     from .runs._run_single import run_single, const2_verify
     from .runs._run_sequence import run_sequence, getSequenceWorkMarks, getOptions, run_sequence_fixed
@@ -56,6 +56,7 @@ class Hybrid:
     
     from .commits._commit_single import commit_single
     from .commits._commit_sequence import commit_sequence
+    from .commits._commit_sequenceMany import commit_sequenceMany
 
     
     def __init__(self, nurseModel: NurseModel, chronos: Chronos):
@@ -68,16 +69,16 @@ class Hybrid:
         numberFail = 0
         limitRuns = 2000
         nOfSmoves = 0
+        numberOfNurses = 15
+        maxIters = numberOfNurses*self.nurseModel.T*self.highest_cmax
         
         for i in range(limitRuns):
-            if i % 1000 == 0:
-                print("===============")
-            s, move = self.run_sequenceMany(numberOfNurses = 2, worse = False, better = True, equal = False)
+            if i % 100 == 0:
+                print("===============",i)
+                input()
+            s, move = self.run_sequenceMany(numberOfNurses = numberOfNurses, maxInsideCombinationOf = maxIters, worse = False, better = True, equal = False)
             if s:
-                raise Exception("Not implemented")
-                print(move)
-                #print(self.helperVariables.projectedX[move["n"]][move["d"]:(move["d"]+len(move["s"]))])
-                self.commit_sequence(move)
+                self.commit_sequenceMany(move)
                 nOfSmoves += 1
             else:
                 numberFail += 1
@@ -94,7 +95,6 @@ class Hybrid:
         self.currentObj = startObj
         self.chronos.startCounter("START_SETTING_START")
         self.generateFromSolution()
-        input(self.penalties.total)
         self.chronos.stopCounter()
         print("Start working")
         while self.chronos.stillValidRestrict():
@@ -108,7 +108,7 @@ class Hybrid:
         ########## THE TIME COST MAY BE REALY SMALL, SO IT IS FIXED A HUGE TIMELIMIT FOR THE SOLVER
 
         ########################################
-        print("-->",self.penalties.total)
+        print("-->",self.startObj, self.penalties.total)
         m.setParam("TimeLimit", 43200)
         
         self.chronos.startCounter("START_OPTIMIZE_LAST")
