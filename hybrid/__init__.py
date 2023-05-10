@@ -131,27 +131,8 @@ class Hybrid:
     
     def runNeighbourhoods_teste(self):
 
-        #finally run the most expesive move
-        for numberOfNurses in [2, 3, 5, 8, 10, 12, 15]:
-        #for numberOfNurses in [2]:
-            print("--->", numberOfNurses)
-            maxIters = numberOfNurses*self.highest_cmax
-            while self.chronos.stillValidRestrict():
-                numberSuccess = 0
-                for i in range(1000):
-                    s, move = self.run_sequenceMany(numberOfNurses = numberOfNurses, maxInsideCombinationOf = maxIters, maxSampled = int(maxIters/numberOfNurses), worse = False, better = True, equal = False)
-                    if s:
-                        self.commit_sequenceMany(move)
-                        numberSuccess += 1
-                        
-                    if not self.chronos.stillValidRestrict():
-                        break
-                    
-                print(numberSuccess)
-                if numberSuccess < 10:
-                    break
-            if not self.chronos.stillValidRestrict():
-                break
+        s, move = self.run_nurseSequenceRewrite(rangeOfSequences = 1, worse = False, better = True, equal = False)
+        
         
         #self.run_focusWorseDays()
     

@@ -1,6 +1,28 @@
 import random
 
-def run_nurseSequenceRewrite(self, worse:bool = False, better:bool = False, equal:bool = False, weight:bool = False): #this is random
+def getSequenceWorkMarks(self, nurse, day, rangeOfSequences):
+    dayStart, dayEnd = self.getSequenceWorkMarks(nurse, day)
+    
+    iter = dayStart
+    while not (iter in self.helperVariables.workingDays[nurse]):
+        iter -= 1
+    dayStart = iter + 1
+    
+    iter = dayEnd
+    while not (iter in self.helperVariables.workingDays[nurse]):
+        iter += 1
+    dayEnd = iter - 1
+
+    print(self.helperVariables.projectedX[nurse])
+    print(dayStart, dayEnd)
+
+    if rangeOfSequences == 1:
+        return dayStart, dayEnd
+    
+    raise Exception("Not implemented yet")
+
+
+def run_nurseSequenceRewrite(self, rangeOfSequences:int, worse:bool = False, better:bool = False, equal:bool = False, weight:bool = False): #this is random
 
     allDays = list(range(0, self.nurseModel.D))
     
@@ -21,8 +43,8 @@ def run_nurseSequenceRewrite(self, worse:bool = False, better:bool = False, equa
         nurse = random.randint(0, self.nurseModel.I-1)
         day = random.choice(self.helperVariables.workingDays[nurse])
 
-    dayStart, dayEnd = self.getSequenceWorkMarks(nurse, day)
-
+    dayStart, dayEnd = self.getRangeRewrite(nurse, day)
+    raise Exception("Stop") 
     shiftBefore = "free"
     if dayStart - 1 >= 0:
         shiftBefore = self.shiftFreeMark(self.helperVariables.projectedX[nurse][dayStart-1])
