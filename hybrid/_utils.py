@@ -4,6 +4,12 @@ import json
 def computeLt(self, sequence):
     return sum([self.nurseModel.data.parameters.l_t[sequence[i]] for i in range(len(sequence))])
 
+def generateShiftPre(self, sequence):
+    output = []
+    for t in range(self.nurseModel.T):
+        output.append(sequence.count(t))
+    return output
+
 def preProcessFromSolution(self):
     #print("Generating")
     self.helperVariables.shiftTypeCounter = []

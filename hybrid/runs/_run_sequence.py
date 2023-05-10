@@ -29,7 +29,7 @@ def getOptions(self, shiftBefore, shiftAfter, innerSize):
         return self.helperVariables.sixInnerJourney_rt[shiftBefore][shiftAfter]
     raise Exception("Invalid InnerSize")
 
-def run_sequence(self, worse:bool = False, better:bool = False, equal:bool = False, weight:bool = False): #this is random
+def run_sequence(self, sizeSampleOptions: int = 100, worse:bool = False, better:bool = False, equal:bool = False, weight:bool = False): #this is random
 
     allDays = list(range(0, self.nurseModel.D))
     
@@ -44,8 +44,7 @@ def run_sequence(self, worse:bool = False, better:bool = False, equal:bool = Fal
         if len(possibleNurses) == 0:
             return False, None
 
-        nurse = random.choices(possibleNurses)
-        nurse = nurse[0]
+        nurse = random.choice(possibleNurses)
 
     else:
         nurse = random.randint(0, self.nurseModel.I-1)
@@ -68,7 +67,13 @@ def run_sequence(self, worse:bool = False, better:bool = False, equal:bool = Fal
     oldShifts = self.helperVariables.projectedX[nurse][dayStart:dayEnd+1]
     oldShifts = {"s": oldShifts, "w": self.computeLt(oldShifts)}
     options.remove(oldShifts)
+    oldShifts["shiftPrePro"] = self.generateShiftPre(oldShifts["s"])
+
+    if len(options) > sizeSampleOptions:
+        options = random.sample(options, k = sizeSampleOptions)
+
     minWorkload, maxWorkload = self.min_max_possible_workload(nurse, oldShifts["w"])
+    
     while len(options) > 0:
 
         opt = random.choice(options)
@@ -84,7 +89,7 @@ def run_sequence(self, worse:bool = False, better:bool = False, equal:bool = Fal
         
     return False, None
 
-def run_sequence_fixed(self, nurse, day):
+def run_sequence_fixed(self, nurse, day, sizeSampleOptions: int = 100):
 
     dayStart, dayEnd = self.getSequenceWorkMarks(nurse, day)
 
@@ -103,10 +108,20 @@ def run_sequence_fixed(self, nurse, day):
     oldShifts = self.helperVariables.projectedX[nurse][dayStart:dayEnd+1]
     oldShifts = {"s": oldShifts, "w": self.computeLt(oldShifts)}
     options.remove(oldShifts)
+    oldShifts["shiftPrePro"] = self.generateShiftPre(oldShifts["s"])
+
+    if len(options) > sizeSampleOptions:
+        options = random.sample(options, k = sizeSampleOptions)
+
+    
+    minWorkload, maxWorkload = self.min_max_possible_workload(nurse, oldShifts["w"])
     for i in range(len(options)-1,-1,-1):
         opt = options[i]
-        newShifts = opt
-        if not self.const_sequence(nurse, oldShifts, newShifts):
+        if opt["w"] >= minWorkload and opt["w"] <= maxWorkload:
+            newShifts = opt
+            if not self.const_sequence(nurse, oldShifts, newShifts):
+                options.remove(opt)
+        else:
             options.remove(opt)
     
     if len(options) == 0:

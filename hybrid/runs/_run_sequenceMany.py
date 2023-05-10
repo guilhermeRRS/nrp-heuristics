@@ -1,7 +1,7 @@
 import random
 
 #if the choosen nurses fails on having at least on alternative sequence each, this function exits
-def run_sequenceMany(self, numberOfNurses:int, maxInsideCombinationOf:int = 10000,  worse:bool = False, better:bool = False, equal:bool = False, weight:bool = False):
+def run_sequenceMany(self, numberOfNurses:int, maxInsideCombinationOf:int = 10000, maxSampled:int = 100,  worse:bool = False, better:bool = False, equal:bool = False, weight:bool = False):
 
     allDays = list(range(0, self.nurseModel.D))
     
@@ -24,7 +24,9 @@ def run_sequenceMany(self, numberOfNurses:int, maxInsideCombinationOf:int = 1000
     earliestDay = self.nurseModel.D
     latestDay = 0
     for nurse in nurses:
-        s, nurseOptions = self.run_sequence_fixed(nurse, day)
+        
+        s, nurseOptions = self.run_sequence_fixed(nurse, day, sizeSampleOptions = maxSampled)
+        
         if s:
             if earliestDay > nurseOptions["dayStart"]:
                 earliestDay = nurseOptions["dayStart"]
@@ -36,7 +38,7 @@ def run_sequenceMany(self, numberOfNurses:int, maxInsideCombinationOf:int = 1000
 
     if len(nursesOptions) != numberOfNurses:
         return False, None
-
+    
     '''
     (preenchimento de pré-processamento) -> para olds (the um append no old, conforme insere-se os intervalos)
     Agora, dentro do rol de combinações possíveis, escolhe-se, avalia-se a função objetivo até max

@@ -9,7 +9,6 @@ def min_max_possible_workload(self, nurse, oldShiftsWorkLoad):
 
 def const_sequence(self, nurse, oldShifts, newShifts):
 
-    
     newWorkload = self.helperVariables.workloadCounter[nurse] - oldShifts["w"] + newShifts["w"]
 
     b_min = self.nurseModel.data.parameters.b_min[nurse]
@@ -19,10 +18,9 @@ def const_sequence(self, nurse, oldShifts, newShifts):
         return False
     
     affectedShifts = list(dict.fromkeys(newShifts["s"]))
-    for affectedShift in affectedShifts:
-        if self.helperVariables.shiftTypeCounter[nurse][affectedShift] - oldShifts["s"].count(affectedShift) + newShifts["s"].count(affectedShift) > self.nurseModel.data.parameters.m_max[nurse][affectedShift]:
+    for affectedShift in newShifts["s"]:
+        if self.helperVariables.shiftTypeCounter[nurse][affectedShift] - oldShifts["shiftPrePro"][affectedShift] + newShifts["s"].count(affectedShift) > self.nurseModel.data.parameters.m_max[nurse][affectedShift]:
             return False
-    
     return True
 
 def math_demandSingleShift_manyNurses_daySequence(self, dayStart, dayIndex, oldShifts, newShifts, shift):

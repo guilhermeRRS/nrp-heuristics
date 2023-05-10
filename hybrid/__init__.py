@@ -45,7 +45,7 @@ class Hybrid:
     chronos: Chronos
     helperVariables: HelperVariables
 
-    from ._utils import preProcessFromSolution, getPreProcessData, preProcess, computeLt, shiftFreeMark, shiftFreeUnMark, getOptions, evaluateFO
+    from ._utils import preProcessFromSolution, getPreProcessData, preProcess, computeLt, generateShiftPre, shiftFreeMark, shiftFreeUnMark, getOptions, evaluateFO
 
     from .rules._forSingle import const_single, math_single, math_single_demand, math_single_preference, math_single_demandDelta, math_single_preferenceDelta
     from .rules._forSequence import min_max_possible_workload, const_sequence, math_sequence, math_manyNurses_daySequence, math_demandSingleShift_manyNurses_daySequence
@@ -82,48 +82,80 @@ class Hybrid:
                     break
 
             print(numberSuccess)
-            if numberSuccess < 25:
+            if numberSuccess < 10:
                 break
 
+        print("~~~~~>",self.penalties.total)
         print("Segunda mais rápida")
         #then we run the second fastest move
+        maxIters = self.highest_cmax
         while self.chronos.stillValidRestrict():
             numberSuccess = 0
-            for i in range(10000):
-                s, move = self.run_sequence(worse = False, better = True, equal = False)
+            for i in range(1000):
+                s, move = self.run_sequence(sizeSampleOptions = maxIters, worse = False, better = True, equal = False)
                 if s:
                     self.commit_sequence(move)
                     numberSuccess += 1
+                    
                 if not self.chronos.stillValidRestrict():
                     break
             
             print(numberSuccess)
-            if numberSuccess < 50:
+            if numberSuccess < 10:
                 break
-
+        print("~~~~~>",self.penalties.total)
         print("Mais custosa")
         #finally run the most expesive move
         for numberOfNurses in [2, 3, 5, 8, 10, 12, 15]:
+        #for numberOfNurses in [2]:
             print("--->", numberOfNurses)
-            maxIters = numberOfNurses*self.nurseModel.T*self.highest_cmax
+            maxIters = numberOfNurses*self.highest_cmax
             while self.chronos.stillValidRestrict():
                 numberSuccess = 0
                 for i in range(1000):
-                    s, move = self.run_sequenceMany(numberOfNurses = numberOfNurses, maxInsideCombinationOf = maxIters, worse = False, better = True, equal = False)
+                    s, move = self.run_sequenceMany(numberOfNurses = numberOfNurses, maxInsideCombinationOf = maxIters, maxSampled = int(maxIters/numberOfNurses), worse = False, better = True, equal = False)
                     if s:
                         self.commit_sequenceMany(move)
                         numberSuccess += 1
+                        
                     if not self.chronos.stillValidRestrict():
                         break
-
+                    
                 print(numberSuccess)
-                if numberSuccess < 25:
+                if numberSuccess < 10:
                     break
             if not self.chronos.stillValidRestrict():
                 break
         
         #self.run_focusWorseDays()
     
+    def runNeighbourhoods_teste(self):
+
+        #finally run the most expesive move
+        for numberOfNurses in [2, 3, 5, 8, 10, 12, 15]:
+        #for numberOfNurses in [2]:
+            print("--->", numberOfNurses)
+            maxIters = numberOfNurses*self.highest_cmax
+            while self.chronos.stillValidRestrict():
+                numberSuccess = 0
+                for i in range(1000):
+                    s, move = self.run_sequenceMany(numberOfNurses = numberOfNurses, maxInsideCombinationOf = maxIters, maxSampled = int(maxIters/numberOfNurses), worse = False, better = True, equal = False)
+                    if s:
+                        self.commit_sequenceMany(move)
+                        numberSuccess += 1
+                        
+                    if not self.chronos.stillValidRestrict():
+                        break
+                    
+                print(numberSuccess)
+                if numberSuccess < 10:
+                    break
+            if not self.chronos.stillValidRestrict():
+                break
+        
+        #self.run_focusWorseDays()
+    
+
     def run(self, startObj):
         m = self.nurseModel.model.m
         self.startObj = startObj
@@ -134,7 +166,7 @@ class Hybrid:
         print("Start working")
         while self.chronos.stillValidRestrict():
 
-            self.runNeighbourhoods()
+            self.runNeighbourhoods_teste()
             break
 
         ########################################

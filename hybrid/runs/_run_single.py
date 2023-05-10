@@ -15,8 +15,7 @@ def run_single(self, worse:bool = False, better:bool = False, equal:bool = False
         if len(possibleNurses) == 0:
             return False, None
 
-        nurse = random.choices(possibleNurses)
-        nurse = nurse[0]
+        nurse = random.choice(possibleNurses)
 
     else:
         nurse = random.randint(0, self.nurseModel.I-1)
