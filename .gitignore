@@ -5,3 +5,5 @@
 *.sol
 *.log
 */__pycache__/*
+
+.json
