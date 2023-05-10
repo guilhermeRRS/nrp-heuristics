@@ -17,12 +17,10 @@ def run_focusWorseDays(self, numberOfIters:int = 10):
                     self.nurseModel.model.x[i][day][t].ub = 1
 
         if self.chronos.stillValidRestrict():
-            print("!", self.penalties.total)
             self.nurseModel.model.m.setParam("TimeLimit", self.chronos.timeLeft())
             self.nurseModel.model.m.setParam("BestObjStop", self.penalties.total - 100)
             self.nurseModel.model.m.update()
             self.nurseModel.model.m.optimize()
-            input("@")
 
             gurobiReturn = GurobiOptimizedOutput(self.nurseModel.model.m)
 

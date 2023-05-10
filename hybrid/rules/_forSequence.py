@@ -1,3 +1,12 @@
+def min_max_possible_workload(self, nurse, oldShiftsWorkLoad):
+
+    b_min = self.nurseModel.data.parameters.b_min[nurse]
+    b_max = self.nurseModel.data.parameters.b_max[nurse]
+
+    newWorkload = self.helperVariables.workloadCounter[nurse] - oldShiftsWorkLoad
+
+    return b_min - newWorkload, b_max - newWorkload
+
 def const_sequence(self, nurse, oldShifts, newShifts):
 
     
@@ -16,16 +25,20 @@ def const_sequence(self, nurse, oldShifts, newShifts):
     
     return True
 
-def math_demandSingleShift_manyNurses_daySequence(self, day, oldShifts, newShifts, shift):
+def math_demandSingleShift_manyNurses_daySequence(self, dayStart, dayIndex, oldShifts, newShifts, shift):
 
     penaltyOld = 0
     penaltyNew = 0
+
+    day = dayStart + dayIndex
 
     numberNurses = self.penalties.numberNurses[day]
     demand = self.nurseModel.data.parameters.u[day]
 
     w_min = self.nurseModel.data.parameters.w_min[day]
     w_max = self.nurseModel.data.parameters.w_max[day]
+
+    day = dayIndex
 
     if numberNurses[shift] > demand[shift]:
         penaltyOld -= (numberNurses[shift] - demand[shift])*w_max[shift]
@@ -75,6 +88,6 @@ def math_manyNurses_daySequence(self, oldShifts, earliestDay, move):
         affectedShifts = list(dict.fromkeys(oldShifts[day] + newShifts[day]))
         for shift in affectedShifts:
             if shift >= 0:
-                demandDelta += self.math_demandSingleShift_manyNurses_daySequence(day, oldShifts, newShifts, shift)
-    print(self.penalties.total, self.penalties.total + demandDelta + preferenceDelta)
+                demandDelta += self.math_demandSingleShift_manyNurses_daySequence(earliestDay, day, oldShifts, newShifts, shift)
+                
     return self.penalties.total + demandDelta + preferenceDelta

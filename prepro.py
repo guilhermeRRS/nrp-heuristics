@@ -1,4 +1,5 @@
 # coding=utf-8
+import json
 import gurobipy as gp
 from gurobipy import GRB
 import random
@@ -43,7 +44,7 @@ nurse.setPathData(f"{PATH_DATA}Instance{instance}.txt")
 nurse.setPathModel(f"{PATH_MODEL}modelo{instance}.lp")
 nurse.setPathSolution(f"{PATH_INITIAL}{instance}.sol")
 
-chronos = Chronos(timeLimit = (timeLimit - bestTimes[int(instance)-1]))
+chronos = Chronos(timeLimit = 10000)
 
 if True:
 
@@ -54,19 +55,20 @@ if True:
     if nurse.s_data and nurse.s_model and nurse.s_solution:
         hybrid = Hybrid(nurseModel = nurse, instance = instance, chronos = chronos)
 
-        success, nurse = hybrid.run(objs[int(instance)-1])
+        chronos.startCounter("CONTADOR DO PRE")
+        hybrid.preProcess()
+        chronos.stopCounter()
 
-        if success:
-            chronos.printMessage(ORIGIN_MAIN, SUCCESS_SOLVED)
-            if(nurse.solution.printSolution(f"{PATH_SAVE_SOLUTION}{instance}_{description}.sol", nurse.data.sets)):
-                chronos.printMessage(ORIGIN_MAIN, SOLUTION_PRINTING_SUCCESS, False)
-            else:
-                chronos.printMessage(ORIGIN_MAIN, SOLUTION_PRINTING_FAILED, True)
-        else:
-            chronos.printMessage(ORIGIN_MAIN, FAILED_TO_SOLVE, True)
-        
-        chronos.done()
-        
+        chronos.startCounter("Salvando Data")
+        with open(f"{instance}.solutionData.json", "w") as outfile:
+            outfile.write(json.dumps(hybrid.solutionData))
+        chronos.stopCounter()
+            
+        chronos.startCounter("Salvando Journey")
+        with open(f"{instance}.problemJourneyData.json", "w") as outfile:
+            outfile.write(json.dumps(hybrid.problemJourneyData))
+        chronos.stopCounter()
+
     else:
         chronos.printMessage(ORIGIN_MAIN, FAILED_TO_SETUP, True)
 

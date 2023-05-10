@@ -1,10 +1,11 @@
 import itertools
+import json
 
 def computeLt(self, sequence):
     return sum([self.nurseModel.data.parameters.l_t[sequence[i]] for i in range(len(sequence))])
 
-def generateFromSolution(self):
-    print("Generating")
+def preProcessFromSolution(self):
+    #print("Generating")
     self.helperVariables.shiftTypeCounter = []
     self.helperVariables.workloadCounter = []
     self.helperVariables.weekendCounter = []
@@ -24,7 +25,7 @@ def generateFromSolution(self):
             self.penalties.numberNurses[-1].append(0)
             self.penalties.worstDaysShifts[-1].append(0)
     
-    print("Calculating")
+    #print("Calculating")
     for i in range(self.nurseModel.I):
         self.helperVariables.shiftTypeCounter.append([])
         self.helperVariables.workloadCounter.append(0)
@@ -40,9 +41,6 @@ def generateFromSolution(self):
             for t in range(self.nurseModel.T):
                 self.penalties.preference_total += self.nurseModel.data.parameters.p[i][d][t]*self.nurseModel.solution.solution[i][d][t]+self.nurseModel.data.parameters.q[i][d][t]*(1 - self.nurseModel.solution.solution[i][d][t])
             
-                self.nurseModel.model.x[i][d][t].ub = self.nurseModel.solution.solution[i][d][t]
-                self.nurseModel.model.x[i][d][t].lb = self.nurseModel.solution.solution[i][d][t]
-
                 if self.nurseModel.solution.solution[i][d][t] >= 0.5:
                     self.helperVariables.shiftTypeCounter[-1][t] += 1
                     self.helperVariables.workloadCounter[-1] += self.nurseModel.data.parameters.l_t[t]
@@ -53,7 +51,7 @@ def generateFromSolution(self):
         for w in range(self.nurseModel.W):
             self.helperVariables.weekendCounter[-1].append(1 if (self.helperVariables.projectedX[-1][7*w+5] + self.helperVariables.projectedX[-1][7*w+6]) > 0.5 else 0)
     
-    print("Demanding & setting")
+    #print("Demanding & setting")
     self.penalties.demand = 0
 
     r_t_plain = []
@@ -64,9 +62,9 @@ def generateFromSolution(self):
     self.helperVariables.fiveInnerJourney_rt = {"free": {"free": []}}
     self.helperVariables.sixInnerJourney_rt = {"free": {"free": []}}
 
-    equivalence = []
+    #equivalence = []
     for t in range(self.nurseModel.T):
-        equivalence.append(self.nurseModel.data.sets.R_t.index(self.nurseModel.data.sets.R_t[t]))
+        #equivalence.append(self.nurseModel.data.sets.R_t.index(self.nurseModel.data.sets.R_t[t]))
         for d in range(self.nurseModel.D):
             numberNurses = self.penalties.numberNurses[d][t]
             neededNurses = self.nurseModel.data.parameters.u[d][t]
@@ -107,7 +105,7 @@ def generateFromSolution(self):
 
     self.penalties.total = self.penalties.demand + self.penalties.preference_total
 
-    print("The monster")
+    #print("The monster")
     highest_cmax = max(self.nurseModel.data.parameters.c_max)
     self.highest_cmax = highest_cmax
 
@@ -123,7 +121,7 @@ def generateFromSolution(self):
         sizedFiveStarting[t] = []
         sizedSixStarting[t] = []
     
-    print("The monster for sized 2")
+    #print("The monster for sized 2")
     sizedTwo = []
     for tStart in range(self.nurseModel.T):
         for tEnd in r_t_plain[tStart]:
@@ -139,7 +137,7 @@ def generateFromSolution(self):
 
             self.helperVariables.twoInnerJourney_rt["free"]["free"].append({"s": newSequence, "w": self.computeLt(newSequence)})
     
-    print("The monster for sized 3")
+    #print("The monster for sized 3")
     sizedThree = []
     for sequence1 in sizedTwo:
         tEndingFirst = sequence1[-1]
@@ -157,7 +155,7 @@ def generateFromSolution(self):
             self.helperVariables.twoInnerJourney_rt["free"][sequence2[-1]].append({"s": freeFirst, "w": self.computeLt(freeFirst)})
             self.helperVariables.threeInnerJourney_rt["free"]["free"].append({"s": newSequence, "w": self.computeLt(newSequence)})
     
-    print("The monster for sized 4")
+    #print("The monster for sized 4")
     if highest_cmax >= 4:
         sizedFour = []
         for sequence1 in sizedTwo:
@@ -177,7 +175,7 @@ def generateFromSolution(self):
                     self.helperVariables.threeInnerJourney_rt["free"][sequence2[-1]].append({"s": freeFirst, "w": self.computeLt(freeFirst)})
                     self.helperVariables.fourInnerJourney_rt["free"]["free"].append({"s": newSequence, "w": self.computeLt(newSequence)})
             
-    print("The monster for sized 5")
+    #print("The monster for sized 5")
     if highest_cmax >= 5:
         sizedFive = []
         for sequence1 in sizedTwo:
@@ -197,28 +195,34 @@ def generateFromSolution(self):
                     self.helperVariables.fourInnerJourney_rt["free"][sequence2[-1]].append({"s": freeFirst, "w": self.computeLt(freeFirst)})
                     self.helperVariables.fiveInnerJourney_rt["free"]["free"].append({"s": newSequence, "w": self.computeLt(newSequence)})
             
-    print("The monster for sized 6")
+    #print("The monster for sized 6")
     if highest_cmax >= 6:
         sizedSix = []
-        for sequence1 in sizedTwo:
+        iterador = 0
+        for sequence1 in sizedThree:
+            iterador += 1
             tEndingFirst = sequence1[-1]
+            iterador2 = 0
             for tStartingSecond in r_t_plain[tEndingFirst]:
-                for sequence2 in sizedFourStarting[tStartingSecond]:
+                iterador2 += 1
+                #adicionar aqui a linha de equivalente
+                for sequence2 in sizedThreeStarting[tStartingSecond]:
                     newSequence = sequence1 + sequence2
                     #sizedSix.append(newSequence)
                     #sizedSixStarting[sequence1[0]].append(newSequence)
                     
                     ##Setting the global vars
-                    innerSeq = [sequence1[1], sequence2[0], sequence2[1], sequence2[2]]
-                    freeAfter = [sequence1[1]] + sequence2
-                    freeFirst = sequence1 + [sequence2[0], sequence2[1], sequence2[2]]
+                    innerSeq = [sequence1[1], sequence2[2], sequence2[0], sequence2[1]]
+                    freeAfter = [sequence1[1], sequence2[2]] + sequence2
+                    freeFirst = sequence1 + [sequence2[0], sequence2[1]]
                     self.helperVariables.fourInnerJourney_rt[sequence1[0]][sequence2[-1]].append({"s": innerSeq, "w": self.computeLt(innerSeq)})
                     self.helperVariables.fiveInnerJourney_rt[sequence1[0]]["free"].append({"s": freeAfter, "w": self.computeLt(freeAfter)})
                     self.helperVariables.fiveInnerJourney_rt["free"][sequence2[-1]].append({"s": freeFirst, "w": self.computeLt(freeFirst)})
                     self.helperVariables.sixInnerJourney_rt["free"]["free"].append({"s": newSequence, "w": self.computeLt(newSequence)})
 
-    print("Party over")
+    #print("Party over")
 
+    '''
     self.helperVariables.oneInnerJourney_rt["free"]["free"] = list(k for k,_ in itertools.groupby(self.helperVariables.oneInnerJourney_rt["free"]["free"]))
     self.helperVariables.twoInnerJourney_rt["free"]["free"] = list(k for k,_ in itertools.groupby(self.helperVariables.twoInnerJourney_rt["free"]["free"]))
     self.helperVariables.threeInnerJourney_rt["free"]["free"] = list(k for k,_ in itertools.groupby(self.helperVariables.threeInnerJourney_rt["free"]["free"]))
@@ -239,16 +243,16 @@ def generateFromSolution(self):
             self.helperVariables.twoInnerJourney_rt[tStart][tEnd] = list(k for k,_ in itertools.groupby(self.helperVariables.twoInnerJourney_rt[tStart][tEnd]))
             self.helperVariables.threeInnerJourney_rt[tStart][tEnd] = list(k for k,_ in itertools.groupby(self.helperVariables.threeInnerJourney_rt[tStart][tEnd]))
             self.helperVariables.fourInnerJourney_rt[tStart][tEnd] = list(k for k,_ in itertools.groupby(self.helperVariables.fourInnerJourney_rt[tStart][tEnd]))
-            
+    '''
     
 def shiftFreeMark(self, shift):
     if shift == -1:
         return "free"
-    return shift
+    return str(shift)
 def shiftFreeUnMark(self, shift):
     if shift == "free":
         return -1
-    return shift
+    return str(shift)
 
 def getOptions(self, nurse, dayStart, dayEnd, size):
 
@@ -299,3 +303,68 @@ def evaluateFO(self, oldObj, newObj, worse:bool = False, better:bool = True, equ
     if equal and oldObj == newObj:
         return True
     return False
+
+###################################################################
+def getPreProcessData(self):
+    instancia = self.instance
+    f = open(f'{instancia}.solutionData.json')
+    solutionData = json.load(f)
+    
+    self.helperVariables.shiftTypeCounter = solutionData["helperVariables"]["shiftTypeCounter"]
+    self.helperVariables.workloadCounter = solutionData["helperVariables"]["workloadCounter"]
+    self.helperVariables.weekendCounter = solutionData["helperVariables"]["weekendCounter"]
+    self.helperVariables.projectedX = solutionData["helperVariables"]["projectedX"]
+    self.helperVariables.workingDays = solutionData["helperVariables"]["workingDays"]
+    
+    self.penalties.preference_total = solutionData["penalties"]["preference_total"]
+    self.penalties.numberNurses = solutionData["penalties"]["numberNurses"]
+    self.penalties.demand = solutionData["penalties"]["demand"]
+    self.penalties.worstDays = solutionData["penalties"]["worstDays"]
+    self.penalties.worstDaysShifts = solutionData["penalties"]["worstDaysShifts"]
+    self.penalties.total = solutionData["penalties"]["total"]
+
+    f = open(f'{instancia}.problemJourneyData.json')
+    problemJourneyData = json.load(f)
+    
+    self.highest_cmax = problemJourneyData["highest_cmax"]
+    self.helperVariables.oneInnerJourney_rt = problemJourneyData["oneInnerJourney_rt"]
+    self.helperVariables.twoInnerJourney_rt = problemJourneyData["twoInnerJourney_rt"]
+    self.helperVariables.threeInnerJourney_rt = problemJourneyData["threeInnerJourney_rt"]
+    self.helperVariables.fourInnerJourney_rt = problemJourneyData["fourInnerJourney_rt"]
+    self.helperVariables.fiveInnerJourney_rt = problemJourneyData["fiveInnerJourney_rt"]
+    self.helperVariables.sixInnerJourney_rt = problemJourneyData["sixInnerJourney_rt"]
+
+    for i in range(self.nurseModel.I):
+        for d in range(self.nurseModel.D):
+            for t in range(self.nurseModel.T):
+                self.nurseModel.model.x[i][d][t].ub = self.nurseModel.solution.solution[i][d][t]
+                self.nurseModel.model.x[i][d][t].lb = self.nurseModel.solution.solution[i][d][t]
+
+def preProcess(self):
+    self.preProcessFromSolution()
+    self.solutionData = {
+        "helperVariables": {
+            "shiftTypeCounter": self.helperVariables.shiftTypeCounter,
+            "workloadCounter": self.helperVariables.workloadCounter,
+            "weekendCounter": self.helperVariables.weekendCounter,
+            "projectedX": self.helperVariables.projectedX,
+            "workingDays": self.helperVariables.workingDays,
+        },
+        "penalties": {
+            "preference_total": self.penalties.preference_total,
+            "demand": self.penalties.demand,
+            "numberNurses": self.penalties.numberNurses,
+            "worstDays": self.penalties.worstDays,
+            "worstDaysShifts": self.penalties.worstDaysShifts,
+            "total": self.penalties.total,
+        }
+    }
+    self.problemJourneyData = {
+        "highest_cmax": self.highest_cmax,
+        "oneInnerJourney_rt": self.helperVariables.oneInnerJourney_rt,
+        "twoInnerJourney_rt": self.helperVariables.twoInnerJourney_rt,
+        "threeInnerJourney_rt": self.helperVariables.threeInnerJourney_rt,
+        "fourInnerJourney_rt": self.helperVariables.fourInnerJourney_rt,
+        "fiveInnerJourney_rt": self.helperVariables.fiveInnerJourney_rt,
+        "sixInnerJourney_rt": self.helperVariables.sixInnerJourney_rt,
+    } 

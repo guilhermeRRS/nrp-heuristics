@@ -16,10 +16,10 @@ def run_sequenceMany(self, numberOfNurses:int, maxInsideCombinationOf:int = 1000
         if day in self.helperVariables.workingDays[i]:
             possibleNurses.append(i)
             
-    if len(possibleNurses) == 0:
+    if len(possibleNurses) < numberOfNurses:
         return False, None
     
-    nurses = random.choices(possibleNurses, k = numberOfNurses)
+    nurses = random.sample(possibleNurses, k = numberOfNurses)
     nursesOptions = []
     earliestDay = self.nurseModel.D
     latestDay = 0
@@ -58,7 +58,7 @@ def run_sequenceMany(self, numberOfNurses:int, maxInsideCombinationOf:int = 1000
             nurseOption = nursesOptions[j]
             choosenOptions.append({"n": nurses[j], "length": nurseOption["length"], "dayStart": nurseOption["dayStart"], "s": (random.choice(nurseOption["options"]))["s"]})
 
-        newObj = self.math_manyNurses_daySequence(oldShifts, earliestDay, choosenOptions) 
+        newObj = self.math_manyNurses_daySequence(oldShifts, earliestDay, choosenOptions)
         if self.evaluateFO(self.penalties.total, newObj, worse, better, equal):
             return True, {"s": choosenOptions}
         

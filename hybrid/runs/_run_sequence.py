@@ -68,15 +68,17 @@ def run_sequence(self, worse:bool = False, better:bool = False, equal:bool = Fal
     oldShifts = self.helperVariables.projectedX[nurse][dayStart:dayEnd+1]
     oldShifts = {"s": oldShifts, "w": self.computeLt(oldShifts)}
     options.remove(oldShifts)
+    minWorkload, maxWorkload = self.min_max_possible_workload(nurse, oldShifts["w"])
     while len(options) > 0:
 
         opt = random.choice(options)
-        newShifts = opt
-        if self.const_sequence(nurse, oldShifts, newShifts):
-            oldObj = self.penalties.total
-            newObj = self.math_sequence(nurse, dayStart, dayEnd, oldShifts["s"], newShifts["s"])
-            if self.evaluateFO(oldObj, newObj, worse, better, equal):
-                return True, {"n": nurse, "d": dayStart, "s": newShifts["s"]}
+        if opt["w"] >= minWorkload and opt["w"] <= maxWorkload:
+            newShifts = opt
+            if self.const_sequence(nurse, oldShifts, newShifts):
+                oldObj = self.penalties.total
+                newObj = self.math_sequence(nurse, dayStart, dayEnd, oldShifts["s"], newShifts["s"])
+                if self.evaluateFO(oldObj, newObj, worse, better, equal):
+                    return True, {"n": nurse, "d": dayStart, "s": newShifts["s"]}
 
         options.remove(opt)
         
