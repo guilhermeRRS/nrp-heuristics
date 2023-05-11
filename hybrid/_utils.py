@@ -1,8 +1,45 @@
 import itertools
 import json
 
+def get_extremeShifts(self, nurse):
+
+    allowed_l_t = []
+    for i in range(self.nurseModel.T):
+        if self.nurseModel.data.parameters.m_max[nurse][i] > 0:
+            allowed_l_t.append(self.nurseModel.data.parameters.l_t[i])
+
+    shortestShiftSize = min(allowed_l_t)
+    longestShiftSize = max(allowed_l_t)
+    return shortestShiftSize, longestShiftSize
+
 def computeLt(self, sequence):
     return sum([self.nurseModel.data.parameters.l_t[sequence[i]] for i in range(len(sequence))])
+
+def computeWorkloadSeq(self, nurse, dayStart, dayEnd):
+    soma = 0
+    for day in range(dayStart, dayEnd+1):
+        shift = self.helperVariables.projectedX[nurse][day]
+        if shift >= 0:
+            soma += self.nurseModel.data.parameters.l_t[shift]
+    return soma
+
+def min_max_forRewrite(self, nurse, dayStart, dayEnd):
+    workLoadWithoutSeq = self.helperVariables.workloadCounter[nurse] - self.computeWorkloadSeq(nurse, dayStart, dayEnd)
+    shortestShiftSize, longestShiftSize = self.get_extremeShifts(nurse)
+    
+    minWorkload = (self.nurseModel.data.parameters.b_max[nurse] - workLoadWithoutSeq)
+    maxWorkload = (self.nurseModel.data.parameters.b_min[nurse] - workLoadWithoutSeq)
+    
+    maximumDaysWorking = minWorkload/shortestShiftSize
+    minimumDaysWorking = maximumDaysWorking/longestShiftSize
+    
+    minimumNumberOfWorkingSequences = minimumDaysWorking/self.nurseModel.data.parameters.c_max[nurse]
+    maximumNumberOfWorkingSequences = maximumDaysWorking/self.nurseModel.data.parameters.c_min[nurse]
+
+    print("-->", self.nurseModel.data.parameters.c_min[nurse], self.nurseModel.data.parameters.c_max[nurse])
+    print("~~>", self.nurseModel.data.parameters.b_min[nurse], self.nurseModel.data.parameters.b_max[nurse])
+    
+    return workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, minimumNumberOfWorkingSequences, maximumNumberOfWorkingSequences
 
 def generateShiftPre(self, sequence):
     output = []

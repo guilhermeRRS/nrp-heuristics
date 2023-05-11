@@ -1,26 +1,38 @@
 import random
 
-def getSequenceWorkMarks(self, nurse, day, rangeOfSequences):
+def getRangeRewrite(self, nurse, day, rangeOfSequences):
+    
     dayStart, dayEnd = self.getSequenceWorkMarks(nurse, day)
     
-    iter = dayStart
-    while not (iter in self.helperVariables.workingDays[nurse]):
+    iter = dayStart - 1
+    while not (iter in self.helperVariables.workingDays[nurse]) and iter >= 0:
         iter -= 1
     dayStart = iter + 1
     
-    iter = dayEnd
-    while not (iter in self.helperVariables.workingDays[nurse]):
+    iter = dayEnd + 1
+    while not (iter in self.helperVariables.workingDays[nurse]) and iter < self.nurseModel.D:
         iter += 1
     dayEnd = iter - 1
-
-    print(self.helperVariables.projectedX[nurse])
-    print(dayStart, dayEnd)
-
-    if rangeOfSequences == 1:
-        return dayStart, dayEnd
     
-    raise Exception("Not implemented yet")
+    for i in range(1,rangeOfSequences):
+        if i % 2 == 0:
+            iter = dayStart - 1
+            while iter in self.helperVariables.workingDays[nurse] and iter >= 0:
+                iter -= 1
+                
+            while not (iter in self.helperVariables.workingDays[nurse]) and iter >= 0:
+                iter -= 1
+            dayStart = iter + 1
+        else:
+            iter = dayEnd + 1
+            while iter in self.helperVariables.workingDays[nurse] and iter < self.nurseModel.D:
+                iter += 1
+                
+            while not (iter in self.helperVariables.workingDays[nurse]) and iter < self.nurseModel.D:
+                iter += 1
+            dayEnd = iter - 1
 
+    return dayStart, dayEnd
 
 def run_nurseSequenceRewrite(self, rangeOfSequences:int, worse:bool = False, better:bool = False, equal:bool = False, weight:bool = False): #this is random
 
@@ -43,7 +55,25 @@ def run_nurseSequenceRewrite(self, rangeOfSequences:int, worse:bool = False, bet
         nurse = random.randint(0, self.nurseModel.I-1)
         day = random.choice(self.helperVariables.workingDays[nurse])
 
-    dayStart, dayEnd = self.getRangeRewrite(nurse, day)
+    nurse = 0
+    day = 0
+    print(self.helperVariables.projectedX[nurse])
+    print("_______/",rangeOfSequences)
+    dayStart, dayEnd = self.getRangeRewrite(nurse, day, rangeOfSequences)
+    
+    workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, minimumNumberOfWorkingSequences, maximumNumberOfWorkingSequences = self.min_max_forRewrite(nurse, dayStart, dayEnd)
+
+    print(self.generate_structure(nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, minimumNumberOfWorkingSequences, maximumNumberOfWorkingSequences))
+    print(self.generate_structure(nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, minimumNumberOfWorkingSequences, maximumNumberOfWorkingSequences))
+    print(self.generate_structure(nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, minimumNumberOfWorkingSequences, maximumNumberOfWorkingSequences))
+    print(self.generate_structure(nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, minimumNumberOfWorkingSequences, maximumNumberOfWorkingSequences))
+    print(self.generate_structure(nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, minimumNumberOfWorkingSequences, maximumNumberOfWorkingSequences))
+    print(self.generate_structure(nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, minimumNumberOfWorkingSequences, maximumNumberOfWorkingSequences))
+    print(self.generate_structure(nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, minimumNumberOfWorkingSequences, maximumNumberOfWorkingSequences))
+    print(self.generate_structure(nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, minimumNumberOfWorkingSequences, maximumNumberOfWorkingSequences))
+    print(self.generate_structure(nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, minimumNumberOfWorkingSequences, maximumNumberOfWorkingSequences))
+    print(self.generate_structure(nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, minimumNumberOfWorkingSequences, maximumNumberOfWorkingSequences))
+    
     raise Exception("Stop") 
     shiftBefore = "free"
     if dayStart - 1 >= 0:
