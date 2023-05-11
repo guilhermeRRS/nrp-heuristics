@@ -2,10 +2,6 @@ import random
 
 def generate_structure(self, nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, minimumNumberOfWorkingSequences, maximumNumberOfWorkingSequences):
 
-    print(nurse, dayStart, dayEnd)
-    print(workLoadWithoutSeq, minWorkload, maxWorkload)
-    print(maximumDaysWorking, minimumDaysWorking)
-
     newStructure = []
     workingDays = []
 
@@ -14,9 +10,22 @@ def generate_structure(self, nurse, dayStart, dayEnd, workLoadWithoutSeq, minWor
         while random.random() >= 0.5:
             newStructure.append(0)
             iter += 1
-            
+
     while len(workingDays) < dayEnd - dayStart and maximumDaysWorking - len(workingDays) >= self.nurseModel.data.parameters.c_min[nurse]:
-        daysToWork = 6#(self.nurseModel.data.parameters.c_min[nurse], min(self.nurseModel.data.parameters.c_max[nurse], maximumDaysWorking - len(workingDays)))
+        daysToWork = random.randint(self.nurseModel.data.parameters.c_min[nurse], min(self.nurseModel.data.parameters.c_max[nurse], maximumDaysWorking - len(workingDays)))
+        nextN_i = -1
+        ableToWork = 0
+        for d in range(iter, iter + daysToWork):
+            if d in self.nurseModel.data.sets.N_i[nurse]:
+                nextN_i = d
+                break
+            else:
+                ableToWork += 1
+        if nextN_i >= 0:
+            if ableToWork >= self.nurseModel.data.parameters.c_min[nurse]:
+                daysToWork = ableToWork
+            else:
+                daysToWork = 0
         for d in range(daysToWork):
             workingDays.append(iter)
             newStructure.append(1)
@@ -40,9 +49,6 @@ def generate_structure(self, nurse, dayStart, dayEnd, workLoadWithoutSeq, minWor
         if iter in workingDays:
             workingDays.remove(iter)
         iter -= 1
-        
-    print(newStructure)
-    print(workingDays)
 
     #here we garantee the interval will fit without break any restriction
     iter = len(newStructure) - 1
@@ -76,15 +82,16 @@ def generate_structure(self, nurse, dayStart, dayEnd, workLoadWithoutSeq, minWor
                         newStructure[iter] = 0
                         workingDays.remove(iter+dayStart)
 
-    print("N_i",self.nurseModel.data.sets.N_i[nurse])
-    print(newStructure)
-    print(workingDays)
+    numberOfDaysWorking = sum(newStructure)
+    if numberOfDaysWorking < minimumDaysWorking or numberOfDaysWorking > maximumDaysWorking:
+            return False, None, None
 
     #here we verify restriction 10 -> days thar the nurse must rest
+    '''
     for day in self.nurseModel.data.sets.N_i[nurse]:
         if day in workingDays:
             input("++")
             return False, None, None
-    input("--")
+    input("--")'''
     return True, newStructure, workingDays
     

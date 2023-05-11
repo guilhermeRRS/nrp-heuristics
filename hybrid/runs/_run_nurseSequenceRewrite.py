@@ -63,16 +63,10 @@ def run_nurseSequenceRewrite(self, rangeOfSequences:int, worse:bool = False, bet
     
     workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, minimumNumberOfWorkingSequences, maximumNumberOfWorkingSequences = self.min_max_forRewrite(nurse, dayStart, dayEnd)
 
-    print(self.generate_structure(nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, minimumNumberOfWorkingSequences, maximumNumberOfWorkingSequences))
-    print(self.generate_structure(nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, minimumNumberOfWorkingSequences, maximumNumberOfWorkingSequences))
-    print(self.generate_structure(nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, minimumNumberOfWorkingSequences, maximumNumberOfWorkingSequences))
-    print(self.generate_structure(nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, minimumNumberOfWorkingSequences, maximumNumberOfWorkingSequences))
-    print(self.generate_structure(nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, minimumNumberOfWorkingSequences, maximumNumberOfWorkingSequences))
-    print(self.generate_structure(nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, minimumNumberOfWorkingSequences, maximumNumberOfWorkingSequences))
-    print(self.generate_structure(nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, minimumNumberOfWorkingSequences, maximumNumberOfWorkingSequences))
-    print(self.generate_structure(nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, minimumNumberOfWorkingSequences, maximumNumberOfWorkingSequences))
-    print(self.generate_structure(nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, minimumNumberOfWorkingSequences, maximumNumberOfWorkingSequences))
-    print(self.generate_structure(nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, minimumNumberOfWorkingSequences, maximumNumberOfWorkingSequences))
+    s, newStructure, workingDays = self.generate_structure(nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, minimumNumberOfWorkingSequences, maximumNumberOfWorkingSequences)
+
+    if s:
+        print("!!!")
     
     raise Exception("Stop") 
     shiftBefore = "free"
