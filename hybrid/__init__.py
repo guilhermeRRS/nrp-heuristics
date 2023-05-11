@@ -45,7 +45,7 @@ class Hybrid:
     chronos: Chronos
     helperVariables: HelperVariables
 
-    from ._utils import preProcessFromSolution, getPreProcessData, preProcess, get_extremeShifts, computeLt, computeWorkloadSeq, min_max_forRewrite, generateShiftPre, shiftFreeMark, shiftFreeUnMark, getOptions, evaluateFO
+    from ._utils import preProcessFromSolution, getPreProcessData, preProcess, get_extremeShifts, computeLt, computeWorkloadSeq, min_max_forRewrite, generateShiftPre, shiftFreeMark, shiftFreeUnMark, getOptions, getOptionBySize, evaluateFO
 
     from .rules._forSingle import const_single, math_single, math_single_demand, math_single_preference, math_single_demandDelta, math_single_preferenceDelta
     from .rules._forSequence import min_max_possible_workload, const_sequence, math_sequence, math_manyNurses_daySequence, math_demandSingleShift_manyNurses_daySequence
@@ -60,7 +60,8 @@ class Hybrid:
     from .commits._commit_sequence import commit_sequence
     from .commits._commit_sequenceMany import commit_sequenceMany
 
-    from .generators._generateStructure import generate_structure
+    from .generators._generateStructure import generate_structure, calibrate, insertMode, removeMode
+    from .generators._generateCover import generate_cover, verify_generateCover_mmax
     
     def __init__(self, nurseModel: NurseModel, instance, chronos: Chronos):
         self.nurseModel = nurseModel
@@ -133,7 +134,7 @@ class Hybrid:
     
     def runNeighbourhoods_teste(self):
 
-        s, move = self.run_nurseSequenceRewrite(rangeOfSequences = 6, worse = False, better = True, equal = False)
+        s, move = self.run_nurseSequenceRewrite(rangeOfSequences = 200, numberOfTries = 100, worse = False, better = True, equal = False)
         
         
         #self.run_focusWorseDays()

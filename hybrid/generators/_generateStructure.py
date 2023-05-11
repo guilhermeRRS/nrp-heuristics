@@ -1,6 +1,11 @@
 import random
 
-def generate_structure(self, nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, minimumNumberOfWorkingSequences, maximumNumberOfWorkingSequences):
+def generate_structure(self, nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, numberBefore, smaller, bigger):
+
+    if numberBefore < minimumDaysWorking:
+        numberBefore = minimumDaysWorking
+    if numberBefore > maximumDaysWorking:
+        numberBefore = maximumDaysWorking
 
     newStructure = []
     workingDays = []
@@ -82,6 +87,8 @@ def generate_structure(self, nurse, dayStart, dayEnd, workLoadWithoutSeq, minWor
                         newStructure[iter] = 0
                         workingDays.remove(iter+dayStart)
 
+    self.calibrate(newStructure, workingDays, numberBefore, smaller, bigger, dayStart, dayEnd, nurse)
+
     numberOfDaysWorking = sum(newStructure)
     if numberOfDaysWorking < minimumDaysWorking or numberOfDaysWorking > maximumDaysWorking:
             return False, None, None
@@ -95,3 +102,63 @@ def generate_structure(self, nurse, dayStart, dayEnd, workLoadWithoutSeq, minWor
     input("--")'''
     return True, newStructure, workingDays
     
+def calibrate(self, newStructure, workingDays, numberBefore, smaller, bigger, dayStart, dayEnd, nurse):
+    print(newStructure, workingDays)
+    print(numberBefore, smaller, bigger)
+    print(dayStart, dayEnd)
+    smaller += 1
+    bigger += 1
+
+    if smaller / bigger > 1.8 or bigger / smaller > 1.8:        
+        durationOfJourneys = []
+
+        iter = dayStart
+        while iter <= dayEnd:
+            
+            sizeWork = 0
+            if newStructure[iter-dayStart] == 1:
+                firstJourney = iter
+                while iter <= dayEnd and newStructure[iter-dayStart] == 1:
+                    sizeWork += 1
+                    iter += 1
+                lastJourney = iter - 1
+                durationOfJourneys.append({"d": sizeWork, "f": firstJourney, "l": lastJourney})
+            else:
+                iter += 1
+
+    if smaller / bigger > 1.8 or len(workingDays) < numberBefore - 2: # about 65 smaller for 35 bigger, so there is a bigger tendency for a smaller number of days
+        if len(workingDays) < numberBefore:
+            return self.insertMode(newStructure, workingDays, numberBefore, durationOfJourneys, nurse)
+    if bigger / smaller > 1.8 or len(workingDays) > numberBefore + 2:
+        if len(workingDays) > numberBefore:
+            return self.removeMode(newStructure, workingDays, numberBefore, durationOfJourneys, nurse)
+
+
+
+    return newStructure, workingDays
+
+def insertMode(self, newStructure, workingDays, numberBefore, durationOfJourneys, nurse):
+    
+    if len(durationOfJourneys) >= 2:
+
+        iter = 0
+        while iter < 100:
+            journey_index = random.randint(0,len(durationOfJourneys)-1)
+            journey = durationOfJourneys[journey_index]
+            if journey["f"] == 0:
+                print(journey)
+            elif journey["f"] == self.nurseModel.D:
+
+            else:
+
+            if durationOfJourneys[journey]["d"] < self.nurseModel.data.parameters.c_max[nurse]:
+                print(durationOfJourneys[journey])
+                input("##")
+    
+    else:
+
+        #aqui precisa tentar expandir considerando-se somente uma ou nenhuma
+    
+def removeMode(self, newStructure, workingDays, numberBefore, durationOfJourneys, nurse):
+    print("@@")
+    input(durationOfJourneys)

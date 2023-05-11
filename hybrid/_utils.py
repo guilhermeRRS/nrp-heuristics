@@ -1,5 +1,6 @@
 import itertools
 import json
+import random
 
 def get_extremeShifts(self, nurse):
 
@@ -27,19 +28,15 @@ def min_max_forRewrite(self, nurse, dayStart, dayEnd):
     workLoadWithoutSeq = self.helperVariables.workloadCounter[nurse] - self.computeWorkloadSeq(nurse, dayStart, dayEnd)
     shortestShiftSize, longestShiftSize = self.get_extremeShifts(nurse)
     
-    minWorkload = (self.nurseModel.data.parameters.b_max[nurse] - workLoadWithoutSeq)
-    maxWorkload = (self.nurseModel.data.parameters.b_min[nurse] - workLoadWithoutSeq)
+    minWorkload = (self.nurseModel.data.parameters.b_min[nurse] - workLoadWithoutSeq)
+    maxWorkload = (self.nurseModel.data.parameters.b_max[nurse] - workLoadWithoutSeq)
     
     maximumDaysWorking = minWorkload/shortestShiftSize
     minimumDaysWorking = maximumDaysWorking/longestShiftSize
-    
-    minimumNumberOfWorkingSequences = minimumDaysWorking/self.nurseModel.data.parameters.c_max[nurse]
-    maximumNumberOfWorkingSequences = maximumDaysWorking/self.nurseModel.data.parameters.c_min[nurse]
 
-    print("-->", self.nurseModel.data.parameters.c_min[nurse], self.nurseModel.data.parameters.c_max[nurse])
-    print("~~>", self.nurseModel.data.parameters.b_min[nurse], self.nurseModel.data.parameters.b_max[nurse])
+    numberBefore = len([i for i, x in enumerate(self.helperVariables.projectedX[nurse]) if x >= 0])
     
-    return workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, minimumNumberOfWorkingSequences, maximumNumberOfWorkingSequences
+    return workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, numberBefore
 
 def generateShiftPre(self, sequence):
     output = []
@@ -323,6 +320,26 @@ def getOptions(self, nurse, dayStart, dayEnd, size):
         allOptions = self.helperVariables.sixInnerJourney_rt[tStart-1][tEnd+1]
 
     return allOptions
+
+def getOptionBySize(self, size, forbideen):
+    
+    if size == 1:
+        allOptions = self.helperVariables.oneInnerJourney_rt["free"]["free"]
+    elif size == 2:
+        allOptions = self.helperVariables.twoInnerJourney_rt["free"]["free"]
+    elif size == 3:
+        allOptions = self.helperVariables.threeInnerJourney_rt["free"]["free"]
+    elif size == 4:
+        allOptions = self.helperVariables.fourInnerJourney_rt["free"]["free"]
+    elif size == 5:
+        allOptions = self.helperVariables.fiveInnerJourney_rt["free"]["free"]
+    elif size == 6:
+        allOptions = self.helperVariables.sixInnerJourney_rt["free"]["free"]
+
+    choice = random.choice(allOptions)
+    while any(i in forbideen for i in choice["s"]):
+        choice = random.choice(allOptions)
+    return choice
 
 def verifyWorkload(self, nurse, workLoadOlds, news, bonus:int = 0):
     newWorkLoad = self.helperVariables.workloadCounter[nurse] - workLoadOlds + self.computeLt(news) + bonus

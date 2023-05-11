@@ -34,7 +34,7 @@ def getRangeRewrite(self, nurse, day, rangeOfSequences):
 
     return dayStart, dayEnd
 
-def run_nurseSequenceRewrite(self, rangeOfSequences:int, worse:bool = False, better:bool = False, equal:bool = False, weight:bool = False): #this is random
+def run_nurseSequenceRewrite(self, rangeOfSequences:int, numberOfTries:int , worse:bool = False, better:bool = False, equal:bool = False, weight:bool = False): #this is random
 
     allDays = list(range(0, self.nurseModel.D))
     
@@ -57,51 +57,22 @@ def run_nurseSequenceRewrite(self, rangeOfSequences:int, worse:bool = False, bet
 
     nurse = 0
     day = 0
-    print(self.helperVariables.projectedX[nurse])
-    print("_______/",rangeOfSequences)
+    
     dayStart, dayEnd = self.getRangeRewrite(nurse, day, rangeOfSequences)
     
-    workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, minimumNumberOfWorkingSequences, maximumNumberOfWorkingSequences = self.min_max_forRewrite(nurse, dayStart, dayEnd)
+    workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, numberBefore = self.min_max_forRewrite(nurse, dayStart, dayEnd)
 
-    s, newStructure, workingDays = self.generate_structure(nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, minimumNumberOfWorkingSequences, maximumNumberOfWorkingSequences)
+    smaller = 0
+    bigger = 0
 
-    if s:
-        print("!!!")
-    
-    raise Exception("Stop") 
-    shiftBefore = "free"
-    if dayStart - 1 >= 0:
-        shiftBefore = self.shiftFreeMark(self.helperVariables.projectedX[nurse][dayStart-1])
-    shiftAfter = "free"
-    if dayEnd + 1 < self.nurseModel.D:
-        shiftAfter = self.shiftFreeMark(self.helperVariables.projectedX[nurse][dayEnd+1])
-    
-    options = copy.deepcopy(self.getOptions(shiftBefore, shiftAfter, dayEnd - dayStart + 1))
-    
-    if len(options) - 1 == 0:
-        return False, None
+    tries = 0
+    while tries < numberOfTries:
+        print(smaller, bigger)
+        s, newStructure, workingDays = self.generate_structure(nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, numberBefore, smaller, bigger)
 
-    oldShifts = self.helperVariables.projectedX[nurse][dayStart:dayEnd+1]
-    oldShifts = {"s": oldShifts, "w": self.computeLt(oldShifts)}
-    options.remove(oldShifts)
-    oldShifts["shiftPrePro"] = self.generateShiftPre(oldShifts["s"])
-
-    if len(options) > sizeSampleOptions:
-        options = random.sample(options, k = sizeSampleOptions)
-
-    minWorkload, maxWorkload = self.min_max_possible_workload(nurse, oldShifts["w"])
-    
-    while len(options) > 0:
-
-        opt = random.choice(options)
-        if opt["w"] >= minWorkload and opt["w"] <= maxWorkload:
-            newShifts = opt
-            if self.const_sequence(nurse, oldShifts, newShifts):
-                oldObj = self.penalties.total
-                newObj = self.math_sequence(nurse, dayStart, dayEnd, oldShifts["s"], newShifts["s"])
-                if self.evaluateFO(oldObj, newObj, worse, better, equal):
-                    return True, {"n": nurse, "d": dayStart, "s": newShifts["s"]}
-
-        options.remove(opt)
+        if s:
+            forbidden = [i for i, x in enumerate(self.nurseModel.data.parameters.m_max[nurse]) if x == 0]
+            s, smaller, bigger, newCover = self.generate_cover(newStructure, workingDays, forbidden, nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maxTries = 100)
+        tries += 1
         
-    return False, None
+    raise Exception("Stop") 
