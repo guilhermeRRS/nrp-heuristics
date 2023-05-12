@@ -1,11 +1,6 @@
 import random
 
-def generate_structure(self, nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, numberBefore, smaller, bigger):
-
-    if numberBefore < minimumDaysWorking:
-        numberBefore = minimumDaysWorking
-    if numberBefore > maximumDaysWorking:
-        numberBefore = maximumDaysWorking
+def generate_structure(self, nurse, dayStart, dayEnd, maximumDaysWorking, minimumDaysWorking, range_min, range_max):
 
     newStructure = []
     workingDays = []
@@ -87,11 +82,12 @@ def generate_structure(self, nurse, dayStart, dayEnd, workLoadWithoutSeq, minWor
                         newStructure[iter] = 0
                         workingDays.remove(iter+dayStart)
 
-    self.calibrate(newStructure, workingDays, numberBefore, smaller, bigger, dayStart, dayEnd, nurse)
-
     numberOfDaysWorking = sum(newStructure)
+
+    #self.calibrate(newStructure, workingDays, numberOfDaysWorking, dayStart, dayEnd, nurse, range_min, range_max)
+
     if numberOfDaysWorking < minimumDaysWorking or numberOfDaysWorking > maximumDaysWorking:
-            return False, None, None
+        return False, None, None
 
     #here we verify restriction 10 -> days thar the nurse must rest
     '''
@@ -102,14 +98,10 @@ def generate_structure(self, nurse, dayStart, dayEnd, workLoadWithoutSeq, minWor
     input("--")'''
     return True, newStructure, workingDays
     
-def calibrate(self, newStructure, workingDays, numberBefore, smaller, bigger, dayStart, dayEnd, nurse):
-    print(newStructure, workingDays)
-    print(numberBefore, smaller, bigger)
-    print(dayStart, dayEnd)
-    smaller += 1
-    bigger += 1
-
-    if smaller / bigger > 1.8 or bigger / smaller > 1.8:        
+def calibrate(self, newStructure, workingDays, numberOfDaysWorking, dayStart, dayEnd, nurse, range_min, range_max):
+    
+    '''
+    if numberOfDaysWorking < range_min or numberOfDaysWorking > range_max:        
         durationOfJourneys = []
 
         iter = dayStart
@@ -125,40 +117,46 @@ def calibrate(self, newStructure, workingDays, numberBefore, smaller, bigger, da
                 durationOfJourneys.append({"d": sizeWork, "f": firstJourney, "l": lastJourney})
             else:
                 iter += 1
+    '''
 
-    if smaller / bigger > 1.8 or len(workingDays) < numberBefore - 2: # about 65 smaller for 35 bigger, so there is a bigger tendency for a smaller number of days
-        if len(workingDays) < numberBefore:
-            return self.insertMode(newStructure, workingDays, numberBefore, durationOfJourneys, nurse)
-    if bigger / smaller > 1.8 or len(workingDays) > numberBefore + 2:
-        if len(workingDays) > numberBefore:
-            return self.removeMode(newStructure, workingDays, numberBefore, durationOfJourneys, nurse)
-
-
+    if numberOfDaysWorking < range_min:
+        return self.insertMode(newStructure, workingDays, numberOfDaysWorking, nurse, dayStart, range_min)
+    
+    elif numberOfDaysWorking > range_max:
+        return self.removeMode(newStructure, workingDays, numberOfDaysWorking, nurse)
 
     return newStructure, workingDays
 
-def insertMode(self, newStructure, workingDays, numberBefore, durationOfJourneys, nurse):
+def insertMode(self, newStructure, workingDays, numberOfDaysWorking, nurse, dayStart, range_min):
     
-    if len(durationOfJourneys) >= 2:
+    freeDays = [i for i, x in enumerate(newStructure) if x == 0]
+    while iter < 10*len(newStructure) and numberOfDaysWorking < range_min:
 
-        iter = 0
-        while iter < 100:
-            journey_index = random.randint(0,len(durationOfJourneys)-1)
-            journey = durationOfJourneys[journey_index]
-            if journey["f"] == 0:
-                print(journey)
-            elif journey["f"] == self.nurseModel.D:
-
+        dayIndex = random.choice(freeDays)
+        day = dayIndex+ dayStart
+        #the first day of schedule
+        if day == 0:
+            if newStructure[dayIndex+1] == 0:
+                numberOfDaysWorking, newStructure, workingDays = self.tryBefore()
             else:
+                numberOfDaysWorking, newStructure, workingDays = self.tryAfter()
+        #the last day of the schedule
+        elif day == self.nurseModel.D-1:
+            if newStructure[dayIndex-1] == 0:
+                numberOfDaysWorking, newStructure, workingDays = self.tryBefore()
+            else:
+                numberOfDaysWorking, newStructure, workingDays = self.tryAfter()
+        #any other day
+        else:
+            #any other day tha follows o_min to outer region
+            if dayIndex >= self.nurseModel.data.parameters.o_min[nurse] and dayIndex < len(newStructure)-self.nurseModel.data.parameters.o_min[nurse]:
+                numberOfDaysWorking, newStructure, workingDays = self.tryBefore()
+                numberOfDaysWorking, newStructure, workingDays = self.tryAfter()
 
-            if durationOfJourneys[journey]["d"] < self.nurseModel.data.parameters.c_max[nurse]:
-                print(durationOfJourneys[journey])
-                input("##")
-    
-    else:
+        iter += 1
 
-        #aqui precisa tentar expandir considerando-se somente uma ou nenhuma
-    
-def removeMode(self, newStructure, workingDays, numberBefore, durationOfJourneys, nurse):
+    return newStructure, workingDays
+
+def removeMode(self, newStructure, workingDays, numberOfDaysWorking, durationOfJourneys, nurse):
     print("@@")
     input(durationOfJourneys)

@@ -33,10 +33,8 @@ def min_max_forRewrite(self, nurse, dayStart, dayEnd):
     
     maximumDaysWorking = minWorkload/shortestShiftSize
     minimumDaysWorking = maximumDaysWorking/longestShiftSize
-
-    numberBefore = len([i for i, x in enumerate(self.helperVariables.projectedX[nurse]) if x >= 0])
     
-    return workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, numberBefore
+    return minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking
 
 def generateShiftPre(self, sequence):
     output = []
@@ -321,7 +319,7 @@ def getOptions(self, nurse, dayStart, dayEnd, size):
 
     return allOptions
 
-def getOptionBySize(self, size, forbideen):
+def getOptionBySize(self, size, forbideen, nurse, dayStart, dayEnd, allShifts):
     
     if size == 1:
         allOptions = self.helperVariables.oneInnerJourney_rt["free"]["free"]
@@ -336,10 +334,18 @@ def getOptionBySize(self, size, forbideen):
     elif size == 6:
         allOptions = self.helperVariables.sixInnerJourney_rt["free"]["free"]
 
-    choice = random.choice(allOptions)
-    while any(i in forbideen for i in choice["s"]):
-        choice = random.choice(allOptions)
-    return choice
+    #random.shuffle(allOptions)
+    for i in range(len(allOptions)):
+        choice = allOptions[i]
+        if not any(i in forbideen for i in choice["s"]):
+            plausible = True
+            for shift in choice["s"]:
+                if self.helperVariables.shiftTypeCounter[nurse][shift] - self.helperVariables.projectedX[nurse][dayStart:(dayEnd+1)].count(shift) + choice["s"].count(shift) + allShifts.count(shift) > self.nurseModel.data.parameters.m_max[nurse][shift]:
+                    plausible = False
+                    break
+            if plausible:
+                return True, choice
+    return False, None
 
 def verifyWorkload(self, nurse, workLoadOlds, news, bonus:int = 0):
     newWorkLoad = self.helperVariables.workloadCounter[nurse] - workLoadOlds + self.computeLt(news) + bonus
@@ -394,7 +400,13 @@ def getPreProcessData(self):
     self.helperVariables.fiveInnerJourney_rt = problemJourneyData["fiveInnerJourney_rt"]
     self.helperVariables.sixInnerJourney_rt = problemJourneyData["sixInnerJourney_rt"]
 
+    self.parallelModels = []
+
     for i in range(self.nurseModel.I):
+        m, x = self.generateSingleNurseModel(i)
+        m.setParam("Solutionlimit", 1)
+        m.setParam("OutputFlag", 0)
+        self.parallelModels.append({"m": m, "x": x})
         for d in range(self.nurseModel.D):
             for t in range(self.nurseModel.T):
                 self.nurseModel.model.x[i][d][t].ub = self.nurseModel.solution.solution[i][d][t]

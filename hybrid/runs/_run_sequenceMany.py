@@ -1,15 +1,11 @@
 import random
 
-#if the choosen nurses fails on having at least on alternative sequence each, this function exits
-def run_sequenceMany(self, numberOfNurses:int, maxInsideCombinationOf:int = 10000, maxSampled:int = 100,  worse:bool = False, better:bool = False, equal:bool = False, weight:bool = False):
+#if the choosen nurses fails on not having at least on alternative sequence each, this function exits
+def run_sequenceMany(self, numberOfNurses:int, maxInsideCombinationOf:int = 10000, maxSampled:int = 100,  worse:bool = False, better:bool = False, equal:bool = False):
 
     allDays = list(range(0, self.nurseModel.D))
     
-    if weight:
-        day = random.choices(allDays, weights=self.penalties.worstDays)
-        day = day[0]
-    else:
-        day = random.randint(0, self.nurseModel.D-1)
+    day = random.randint(0, self.nurseModel.D-1)
 
     possibleNurses = []
     for i in range(self.nurseModel.I):

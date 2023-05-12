@@ -34,45 +34,31 @@ def getRangeRewrite(self, nurse, day, rangeOfSequences):
 
     return dayStart, dayEnd
 
-def run_nurseSequenceRewrite(self, rangeOfSequences:int, numberOfTries:int , worse:bool = False, better:bool = False, equal:bool = False, weight:bool = False): #this is random
+def run_nurseSequenceRewrite(self, rangeOfSequences:int, numberOfTries:int , worse:bool = False, better:bool = False, equal:bool = False): #this is random
 
     allDays = list(range(0, self.nurseModel.D))
     
-    if weight:
-        day = random.choices(allDays, weights=self.penalties.worstDays)
-        day = day[0]
-        possibleNurses = []
-        for i in range(self.nurseModel.I):
-            if day in self.helperVariables.workingDays[i]:
-                possibleNurses.append(i)
-                
-        if len(possibleNurses) == 0:
-            return False, None
-
-        nurse = random.choice(possibleNurses)
-
-    else:
-        nurse = random.randint(0, self.nurseModel.I-1)
-        day = random.choice(self.helperVariables.workingDays[nurse])
+    nurse = random.randint(0, self.nurseModel.I-1)
+    day = random.choice(self.helperVariables.workingDays[nurse])
 
     nurse = 0
     day = 0
     
     dayStart, dayEnd = self.getRangeRewrite(nurse, day, rangeOfSequences)
     
-    workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, numberBefore = self.min_max_forRewrite(nurse, dayStart, dayEnd)
+    minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking = self.min_max_forRewrite(nurse, dayStart, dayEnd)
 
-    smaller = 0
-    bigger = 0
+    range_min = minimumDaysWorking
+    range_max = maximumDaysWorking
 
     tries = 0
     while tries < numberOfTries:
-        print(smaller, bigger)
-        s, newStructure, workingDays = self.generate_structure(nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maximumDaysWorking, minimumDaysWorking, numberBefore, smaller, bigger)
+        
+        s, newStructure, workingDays = self.generate_structure(nurse, dayStart, dayEnd, maximumDaysWorking, minimumDaysWorking, range_min, range_max)
 
         if s:
             forbidden = [i for i, x in enumerate(self.nurseModel.data.parameters.m_max[nurse]) if x == 0]
-            s, smaller, bigger, newCover = self.generate_cover(newStructure, workingDays, forbidden, nurse, dayStart, dayEnd, workLoadWithoutSeq, minWorkload, maxWorkload, maxTries = 100)
+            s, range_min, range_max, newCover = self.generate_cover(newStructure, workingDays, forbidden, nurse, dayStart, dayEnd, minWorkload, maxWorkload, range_min, range_max, maxTries = 100)
         tries += 1
         
     raise Exception("Stop") 

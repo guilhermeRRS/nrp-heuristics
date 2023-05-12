@@ -20,7 +20,13 @@ def math_single_preferenceDelta(self, nurse, day, oldShift, newShift):
     q = self.nurseModel.data.parameters.q[nurse][day]
     p = self.nurseModel.data.parameters.p[nurse][day]
 
-    return (q[oldShift] - p[oldShift]) + (p[newShift] - q[newShift])
+    penalty = 0
+    if oldShift >= 0:
+        penalty += (q[oldShift] - p[oldShift])
+    if newShift >= 0:
+        penalty += (p[newShift] - q[newShift])
+
+    return penalty
 
 def math_single_preference(self, nurse, day, oldShift, newShift):
     return self.penalties.preference_total + self.math_single_preferenceDelta(nurse, day, oldShift, newShift)
@@ -41,23 +47,29 @@ def math_single_demandDelta(self, day, oldShift, newShift):
     w_min = self.nurseModel.data.parameters.w_min[day]
     w_max = self.nurseModel.data.parameters.w_max[day]
 
-    if numberNurses[oldShift] > demand[oldShift]:
-        penaltyOld -= (numberNurses[oldShift] - demand[oldShift])*w_max[oldShift]
-    if numberNurses[oldShift] < demand[oldShift]:
-        penaltyOld -= (demand[oldShift] - numberNurses[oldShift])*w_min[oldShift]
-    if numberNurses[newShift] > demand[newShift]:
-        penaltyNew -= (numberNurses[newShift] - demand[newShift])*w_max[newShift]
-    if numberNurses[newShift] < demand[newShift]:
-        penaltyNew -= (demand[newShift] - numberNurses[newShift])*w_min[newShift]
-        
-    if numberNurses[oldShift] - 1 > demand[oldShift]:
-        penaltyOld += (numberNurses[oldShift] - 1 - demand[oldShift])*w_max[oldShift]
-    if numberNurses[oldShift] - 1 < demand[oldShift]:
-        penaltyOld += (demand[oldShift] - numberNurses[oldShift] + 1)*w_min[oldShift]
-    if numberNurses[newShift] + 1> demand[newShift]:
-        penaltyNew += (numberNurses[newShift] + 1 - demand[newShift])*w_max[newShift]
-    if numberNurses[newShift] + 1 < demand[newShift]:
-        penaltyNew += (demand[newShift] - numberNurses[newShift] - 1)*w_min[newShift]
+    if oldShift >= 0:
+        if numberNurses[oldShift] > demand[oldShift]:
+            penaltyOld -= (numberNurses[oldShift] - demand[oldShift])*w_max[oldShift]
+        if numberNurses[oldShift] < demand[oldShift]:
+            penaltyOld -= (demand[oldShift] - numberNurses[oldShift])*w_min[oldShift]
+    
+    if newShift >= 0:
+        if numberNurses[newShift] > demand[newShift]:
+            penaltyNew -= (numberNurses[newShift] - demand[newShift])*w_max[newShift]
+        if numberNurses[newShift] < demand[newShift]:
+            penaltyNew -= (demand[newShift] - numberNurses[newShift])*w_min[newShift]
+    
+    if oldShift >= 0:
+        if numberNurses[oldShift] - 1 > demand[oldShift]:
+            penaltyOld += (numberNurses[oldShift] - 1 - demand[oldShift])*w_max[oldShift]
+        if numberNurses[oldShift] - 1 < demand[oldShift]:
+            penaltyOld += (demand[oldShift] - numberNurses[oldShift] + 1)*w_min[oldShift]
+    
+    if newShift >= 0:
+        if numberNurses[newShift] + 1> demand[newShift]:
+            penaltyNew += (numberNurses[newShift] + 1 - demand[newShift])*w_max[newShift]
+        if numberNurses[newShift] + 1 < demand[newShift]:
+            penaltyNew += (demand[newShift] - numberNurses[newShift] - 1)*w_min[newShift]
 
     #only useful if commit happens right after the math
     self.dayDeltaPenaltyOld = penaltyOld 

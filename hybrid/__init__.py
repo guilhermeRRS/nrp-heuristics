@@ -53,15 +53,17 @@ class Hybrid:
     from .runs._run_single import run_single, const2_verify
     from .runs._run_sequence import run_sequence, getSequenceWorkMarks, getOptions, run_sequence_fixed
     from .runs._run_sequenceMany import run_sequenceMany
-    from .runs._run_nurseSequenceRewrite import run_nurseSequenceRewrite, getRangeRewrite
+    from .runs._run_seqFromModel import run_seqFromModel, getRangeRewrite
+    #from .runs._run_nurseSequenceRewrite import run_nurseSequenceRewrite, getRangeRewrite
     #from .runs._run_focusWorseDays import run_focusWorseDays
     
     from .commits._commit_single import commit_single
     from .commits._commit_sequence import commit_sequence
     from .commits._commit_sequenceMany import commit_sequenceMany
 
-    from .generators._generateStructure import generate_structure, calibrate, insertMode, removeMode
-    from .generators._generateCover import generate_cover, verify_generateCover_mmax
+    from .generators._generateSingleNurseModel import generateSingleNurseModel
+    #from .generators._generateStructure import generate_structure, calibrate, insertMode, removeMode
+    #from .generators._generateCover import generate_cover, verify_generateCover_mmax
     
     def __init__(self, nurseModel: NurseModel, instance, chronos: Chronos):
         self.nurseModel = nurseModel
@@ -133,10 +135,45 @@ class Hybrid:
         #self.run_focusWorseDays()
     
     def runNeighbourhoods_teste(self):
+        
+        print("Mais rápido")
+        #first we do the quickest movement -> this helps a faster exploration of space in larger instances 
+        while self.chronos.stillValidRestrict():
+            numberSuccess = 0
+            for i in range(10000):
+                s, move = self.run_single(worse = False, better = True, equal = False)
+                if s:
+                    self.commit_single(move)
+                    numberSuccess += 1
+                if not self.chronos.stillValidRestrict():
+                    break
 
-        s, move = self.run_nurseSequenceRewrite(rangeOfSequences = 200, numberOfTries = 100, worse = False, better = True, equal = False)
-        
-        
+            print(numberSuccess)
+            if numberSuccess < 10:
+                break
+
+        print("~~~~~>",self.penalties.total)
+        input()
+
+        print("Model helped")
+        for rangeOfSequences in [2, 3, 4]:
+            print("--->", rangeOfSequences)
+            maxIters = 10*rangeOfSequences
+            while self.chronos.stillValidRestrict():
+                numberSuccess = 0
+                for i in range(1000):
+                    s, move = self.run_seqFromModel(rangeOfSequences = rangeOfSequences, numberOfTries = maxIters, worse = False, better = True, equal = False)
+                    if s:
+                        self.commit_sequence(move)
+                        print(self.penalties.total)
+                        numberSuccess += 1
+
+                print(numberSuccess)
+                if numberSuccess < 10:
+                    break
+            if not self.chronos.stillValidRestrict():
+                break
+                    
         #self.run_focusWorseDays()
     
 

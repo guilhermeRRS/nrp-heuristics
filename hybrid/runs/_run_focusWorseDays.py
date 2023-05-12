@@ -3,6 +3,7 @@ import random
 from model import GurobiOptimizedOutput
 
 def run_focusWorseDays(self, numberOfIters:int = 10):
+    raise Exception("Needs to implement calculous for worst days")
     for z in range(numberOfIters):
         allDays = list(range(self.nurseModel.D))
 

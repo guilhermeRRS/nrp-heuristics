@@ -1,25 +1,11 @@
 import random, copy
 
-def run_single(self, worse:bool = False, better:bool = False, equal:bool = False, weight:bool = False): #this is random
+def run_single(self, worse:bool = False, better:bool = False, equal:bool = False): #this is random
 
     allDays = list(range(0, self.nurseModel.D))
     
-    if weight:
-        day = random.choices(allDays, weights=self.penalties.worstDays)
-        day = day[0]
-        possibleNurses = []
-        for i in range(self.nurseModel.I):
-            if day in self.helperVariables.workingDays[i]:
-                possibleNurses.append(i)
-                
-        if len(possibleNurses) == 0:
-            return False, None
-
-        nurse = random.choice(possibleNurses)
-
-    else:
-        nurse = random.randint(0, self.nurseModel.I-1)
-        day = random.choice(self.helperVariables.workingDays[nurse])
+    nurse = random.randint(0, self.nurseModel.I-1)
+    day = random.choice(self.helperVariables.workingDays[nurse])
 
     shiftBefore = "free"
     if day - 1 >= 0:
