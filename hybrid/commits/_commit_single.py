@@ -11,12 +11,6 @@ def commit_single(self, move, useDelta:bool = True):
     self.penalties.preference_total = self.math_single_preference(nurse, day, oldShift, newShift)
 
     self.penalties.total = self.penalties.demand + self.penalties.preference_total
-
-    if oldShift >= 0:
-        self.penalties.worstDaysShifts[day][oldShift] += self.dayDeltaPenaltyOld
-    if newShift >= 0:
-        self.penalties.worstDaysShifts[day][newShift] += self.dayDeltaPenaltyNew
-    self.penalties.worstDays[day] += self.dayDeltaPenaltyNew + self.dayDeltaPenaltyOld
     
     if oldShift >= 0:
         self.nurseModel.model.x[nurse][day][oldShift].lb = 0

@@ -23,7 +23,6 @@ ThreeDimVar = NewType("threeDimVar", List[List[List[gp.Var]]])
 class penalties:
 
     numberNurses: TwoDimInt
-    worstDays: OneDimInt
     demand: int
     preference_total: int
 
@@ -48,12 +47,13 @@ class Hybrid:
     from ._utils import preProcessFromSolution, getPreProcessData, preProcess, get_extremeShifts, computeLt, computeWorkloadSeq, min_max_forRewrite, generateShiftPre, shiftFreeMark, shiftFreeUnMark, getOptions, getOptionBySize, evaluateFO
 
     from .rules._forSingle import const_single, math_single, math_single_demand, math_single_preference, math_single_demandDelta, math_single_preferenceDelta
-    from .rules._forSequence import min_max_possible_workload, const_sequence, math_sequence, math_manyNurses_daySequence, math_demandSingleShift_manyNurses_daySequence
+    from .rules._forSequence import min_max_possible_workload, const_sequence, math_sequence, math_manyNurses_daySequence, math_demandSingleShift_manyNurses_daySequence, math_manyNurses_daySequence_withFree
     
     from .runs._run_single import run_single, const2_verify
     from .runs._run_sequence import run_sequence, getSequenceWorkMarks, getOptions, run_sequence_fixed
     from .runs._run_sequenceMany import run_sequenceMany
-    from .runs._run_seqFromModel import run_seqFromModel, getRangeRewrite
+    from .runs._run_seqFromModel import run_seqFromModel, run_seqFromModel_fixed, getRangeRewrite
+    from .runs._run_seqNursesFromModel import run_seqNurseFromModel
     #from .runs._run_nurseSequenceRewrite import run_nurseSequenceRewrite, getRangeRewrite
     #from .runs._run_focusWorseDays import run_focusWorseDays
     
@@ -134,7 +134,7 @@ class Hybrid:
         
         #self.run_focusWorseDays()
     
-    def runNeighbourhoods_teste(self):
+    def runNeighbourhoods_teste1(self):
         
         print("Mais rápido")
         #first we do the quickest movement -> this helps a faster exploration of space in larger instances 
@@ -176,6 +176,19 @@ class Hybrid:
                     
         #self.run_focusWorseDays()
     
+    def runNeighbourhoods_teste(self):
+        
+        while self.chronos.stillValidRestrict():
+            rangeOfSequences = 2
+            s, move = self.run_seqNurseFromModel(numberOfNurses = 5, rangeOfSequences = rangeOfSequences, worse = False, better = True, equal = False)
+            
+            if s:
+                self.commit_sequenceMany(move)
+                print(self.penalties.total)
+                #numberSuccess += 1
+            
+        #if not self.chronos.stillValidRestrict():
+        #    break
 
     def run(self, startObj):
         m = self.nurseModel.model.m
@@ -196,7 +209,7 @@ class Hybrid:
         ########## THE TIME COST MAY BE REALY SMALL, SO IT IS FIXED A HUGE TIMELIMIT FOR THE SOLVER
 
         ########################################
-        print("-->",self.startObj, self.penalties.total)
+        print("-->",self.startObj, self.penalties.total, self.penalties.preference_total, self.penalties.demand)
         m.setParam("TimeLimit", 43200)
         
         self.chronos.startCounter("START_OPTIMIZE_LAST")

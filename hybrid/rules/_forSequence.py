@@ -25,9 +25,8 @@ def const_sequence(self, nurse, oldShifts, newShifts):
 
 def math_demandSingleShift_manyNurses_daySequence(self, dayStart, dayIndex, oldShifts, newShifts, shift):
 
-    penaltyOld = 0
-    penaltyNew = 0
-
+    penalty = 0
+    
     day = dayStart + dayIndex
 
     numberNurses = self.penalties.numberNurses[day]
@@ -39,21 +38,17 @@ def math_demandSingleShift_manyNurses_daySequence(self, dayStart, dayIndex, oldS
     day = dayIndex
 
     if numberNurses[shift] > demand[shift]:
-        penaltyOld -= (numberNurses[shift] - demand[shift])*w_max[shift]
+        penalty -= (numberNurses[shift] - demand[shift])*w_max[shift]
     if numberNurses[shift] < demand[shift]:
-        penaltyOld -= (demand[shift] - numberNurses[shift])*w_min[shift]
+        penalty -= (demand[shift] - numberNurses[shift])*w_min[shift]
     
     newNumberOfNurses = numberNurses[shift] - oldShifts[day].count(shift) + newShifts[day].count(shift)
     if newNumberOfNurses > demand[shift]:
-        penaltyOld += (newNumberOfNurses - demand[shift])*w_max[shift]
+        penalty += (newNumberOfNurses - demand[shift])*w_max[shift]
     if newNumberOfNurses < demand[shift]:
-        penaltyOld += (demand[shift] - newNumberOfNurses)*w_min[shift]
+        penalty += (demand[shift] - newNumberOfNurses)*w_min[shift]
 
-    #only useful if commit happens right after the math
-    self.dayDeltaPenaltyOld_list.append(penaltyOld) 
-    self.dayDeltaPenaltyNew_list.append(penaltyNew)
-
-    return penaltyOld + penaltyNew
+    return penalty
 
 def math_sequence(self, nurse, dayStart, dayEnd, oldShifts, newShifts):
     penalty = self.penalties.total
@@ -88,4 +83,29 @@ def math_manyNurses_daySequence(self, oldShifts, earliestDay, move):
             if shift >= 0:
                 demandDelta += self.math_demandSingleShift_manyNurses_daySequence(earliestDay, day, oldShifts, newShifts, shift)
                 
+    return self.penalties.total + demandDelta + preferenceDelta
+
+def math_manyNurses_daySequence_withFree(self, oldShifts, earliestDay, move):
+    newShifts = []
+
+    preferenceDelta = 0
+    
+    for d in range(earliestDay, earliestDay+len(oldShifts)):
+        newShifts.append([])
+        for i in range(len(move)):
+            dayIndex_oldNewShift = d - earliestDay
+            if d >= move[i]["dayStart"] and d < move[i]["dayStart"] + move[i]["length"]:
+                newShifts[-1].append(move[i]["s"][d-move[i]["dayStart"]])
+                preferenceDelta += self.math_single_preferenceDelta(move[i]["n"], d, oldShifts[dayIndex_oldNewShift][i], newShifts[dayIndex_oldNewShift][i])
+            else:
+                newShifts[-1].append(-1)
+                
+    demandDelta = 0
+    for d in range(earliestDay, earliestDay+len(oldShifts)):
+        day = d - earliestDay
+        affectedShifts = list(dict.fromkeys(oldShifts[day] + newShifts[day]))
+        for shift in affectedShifts:
+            if shift >= 0:
+                demandDelta += self.math_demandSingleShift_manyNurses_daySequence(earliestDay, day, oldShifts, newShifts, shift)
+
     return self.penalties.total + demandDelta + preferenceDelta

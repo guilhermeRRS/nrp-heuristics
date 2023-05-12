@@ -53,15 +53,10 @@ def preProcessFromSolution(self):
     self.penalties.preference_total = 0
     
     self.penalties.numberNurses = []
-    self.penalties.worstDays = []
-    self.penalties.worstDaysShifts = []
     for d in range(self.nurseModel.D):
         self.penalties.numberNurses.append([])
-        self.penalties.worstDays.append(0)
-        self.penalties.worstDaysShifts.append([])
         for t in range(self.nurseModel.T):
             self.penalties.numberNurses[-1].append(0)
-            self.penalties.worstDaysShifts[-1].append(0)
     
     #print("Calculating")
     for i in range(self.nurseModel.I):
@@ -113,8 +108,6 @@ def preProcessFromSolution(self):
             elif numberNurses > neededNurses:
                 addingPenalty = (numberNurses - neededNurses)*self.nurseModel.data.parameters.w_max[d][t]
                 self.penalties.demand += addingPenalty
-            self.penalties.worstDaysShifts[d][t] += addingPenalty
-            self.penalties.worstDays[d] += addingPenalty
 
         r_t_plain.append([i for i, x in enumerate(self.nurseModel.data.sets.R_t[t]) if x == 0])
 
@@ -385,8 +378,6 @@ def getPreProcessData(self):
     self.penalties.preference_total = solutionData["penalties"]["preference_total"]
     self.penalties.numberNurses = solutionData["penalties"]["numberNurses"]
     self.penalties.demand = solutionData["penalties"]["demand"]
-    self.penalties.worstDays = solutionData["penalties"]["worstDays"]
-    self.penalties.worstDaysShifts = solutionData["penalties"]["worstDaysShifts"]
     self.penalties.total = solutionData["penalties"]["total"]
 
     f = open(f'{instancia}.problemJourneyData.json')
@@ -426,8 +417,6 @@ def preProcess(self):
             "preference_total": self.penalties.preference_total,
             "demand": self.penalties.demand,
             "numberNurses": self.penalties.numberNurses,
-            "worstDays": self.penalties.worstDays,
-            "worstDaysShifts": self.penalties.worstDaysShifts,
             "total": self.penalties.total,
         }
     }
